@@ -4,7 +4,7 @@
 
 from typing import Dict, Any
 import numpy as np
-import pandas as pd
+# import pandas as pd
 from scipy.stats import zscore
 
 # ====================
@@ -68,13 +68,15 @@ def generateGaussian(
 
 # Data Extraction
 def loadData(path, dtype=None):
+    '''
     if dtype=='csv':
         df = pd.read_csv(path)
         df = df.dropna()
         return df
     elif dtype=='pickle':
         return pd.read_pickle(path)
-    elif dtype=='numpy':
+    '''
+    if dtype=='numpy':
         return np.load(path)
 
 def standardize(data):
