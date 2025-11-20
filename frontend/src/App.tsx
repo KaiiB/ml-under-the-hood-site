@@ -1,4 +1,4 @@
-import TestAPI from "./TestAPI";
+import TestAPI from "./TestAPIForPCA";
 
 function App() {
   return (
