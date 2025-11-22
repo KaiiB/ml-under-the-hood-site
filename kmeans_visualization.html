@@ -1,0 +1,3161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Means Clustering - Interactive Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Professional Color Palette */
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary: #64748b;
+            --accent: #0ea5e9;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            
+            /* Neutral Grays */
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            /* Semantic Colors */
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            
+            /* Shadows - Professional & Subtle */
+            --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1920px;
+            margin: 0 auto;
+            padding: var(--spacing-xl);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+            padding: var(--spacing-2xl) var(--spacing-xl);
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        @media (max-width: 1400px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sidebar {
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-xl);
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            position: sticky;
+            top: var(--spacing-xl);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: var(--radius-sm);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+
+        .control-section {
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* Sticky action buttons section */
+        .control-section.actions {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-primary);
+            padding-top: var(--spacing-md);
+            margin-top: auto;
+            border-top: 2px solid var(--border-color);
+            border-bottom: none;
+            z-index: 10;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-section h3 {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-600);
+        }
+
+        .control-section.actions h3 {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .control-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+            letter-spacing: -0.01em;
+        }
+
+        .control-group input[type="number"],
+        .control-group select {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.9375rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .control-group input[type="number"]:hover,
+        .control-group select:hover {
+            border-color: var(--border-hover);
+        }
+
+        .control-group input[type="number"]:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: var(--bg-primary);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: var(--radius-sm);
+            background: var(--gray-200);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: background 0.2s;
+        }
+
+        .slider-container input[type="range"]:hover {
+            background: var(--gray-300);
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--bg-primary);
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            background: var(--primary-dark);
+            transform: scale(1.15);
+            box-shadow: var(--shadow-md);
+        }
+
+        .slider-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.875rem;
+            letter-spacing: -0.01em;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            cursor: pointer;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+
+        .checkbox-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-color);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            border-radius: var(--radius-sm);
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            user-select: none;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            box-shadow: var(--shadow-sm);
+            letter-spacing: -0.01em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #047857 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #b45309 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .visualization-area {
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-xl);
+            min-height: 800px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: none;
+            border: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            margin-bottom: -1px;
+            letter-spacing: -0.01em;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .plot-container {
+            position: relative;
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .plot-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .iteration-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-color);
+        }
+
+        .iteration-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .iteration-slider {
+            flex: 1;
+            height: 6px;
+            border-radius: var(--radius-sm);
+            background: var(--gray-200);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: background 0.2s;
+        }
+
+        .iteration-slider:hover {
+            background: var(--gray-300);
+        }
+
+        .iteration-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--bg-primary);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .iteration-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .metric-card {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .metric-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .metric-card h4 {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-bottom: var(--spacing-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .metric-card .value {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .info-panel {
+            background: var(--bg-secondary);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-xl);
+            margin-top: var(--spacing-xl);
+            border: 1px solid var(--border-color);
+        }
+
+        .info-panel h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .formula-box {
+            background: var(--bg-primary);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin: var(--spacing-md) 0;
+            border-left: 3px solid var(--primary);
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .loading {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin: var(--spacing-xl) 0;
+            border: 1px solid #fecaca;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--gray-900);
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            pointer-events: none;
+            font-size: 0.8125rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .legend {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+            flex-wrap: wrap;
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .centroid {
+            stroke: var(--gray-800);
+            stroke-width: 2;
+        }
+
+        .voronoi-cell {
+            fill-opacity: 0.08;
+            stroke: none;
+        }
+
+        .distance-line {
+            stroke-width: 1.5;
+            stroke-opacity: 0.5;
+        }
+
+        .trajectory {
+            fill: none;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            opacity: 0.6;
+        }
+
+        /* Additional professional styling */
+        #mainPlot, #wcssPlot {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Selection styling */
+        ::selection {
+            background: rgba(37, 99, 235, 0.2);
+            color: var(--text-primary);
+        }
+
+        /* Focus visible for accessibility */
+        *:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Refined button secondary styling */
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>K-Means Clustering</h1>
+            <p>Interactive Step-by-Step Visualization & Learning Platform</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- Sidebar Controls -->
+            <div class="sidebar">
+                <div class="control-section">
+                    <h3>Dataset Configuration</h3>
+                    <div class="control-group">
+                        <label>Data Type</label>
+                        <select id="dataType">
+                            <option value="blobs">Blobs</option>
+                            <option value="moons">Moons</option>
+                            <option value="circles">Circles</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Number of Clusters (K)</label>
+                        <div class="slider-container">
+                            <input type="range" id="nClusters" min="2" max="10" value="3">
+                            <span class="slider-value" id="nClustersValue">3</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Sample Size</label>
+                        <div class="slider-container">
+                            <input type="range" id="nSamples" min="50" max="500" step="50" value="300">
+                            <span class="slider-value" id="nSamplesValue">300</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Dimensions</label>
+                        <select id="nFeatures">
+                            <option value="2">2D</option>
+                            <option value="3">3D</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Blob Variance (Spread)</label>
+                        <div class="slider-container">
+                            <input type="range" id="blobVariance" min="0.3" max="2.0" step="0.1" value="0.5">
+                            <span class="slider-value" id="blobVarianceValue">0.5</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Random Seed</label>
+                        <input type="number" id="randomState" value="42" min="0" max="100">
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Algorithm Settings</h3>
+                    <div class="control-group">
+                        <label>Max Iterations</label>
+                        <input type="number" id="maxIters" value="100" min="10" max="300">
+                    </div>
+                    <div class="control-group">
+                        <label>Tolerance</label>
+                        <input type="number" id="tolerance" value="0.0001" step="0.0001" min="0.00001">
+                    </div>
+                    <div class="control-group">
+                        <label>Initialization Method</label>
+                        <select id="initMethod">
+                            <option value="random">Random (Shows More Convergence)</option>
+                            <option value="kmeans++" selected>K-Means++ (Better Results)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Visualization Options</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="showDistances">
+                            <label for="showDistances">Show Distance Lines</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="showVoronoi" checked>
+                            <label for="showVoronoi">Show Voronoi Regions</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="showTrajectories" checked>
+                            <label for="showTrajectories">Show Centroid Trails</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="showLabels">
+                            <label for="showLabels">Show Point Labels</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Placement Section -->
+                <div class="control-section">
+                    <h3>Manual Placement</h3>
+                    <div class="checkbox-item" style="margin-bottom: var(--spacing-md);">
+                        <input type="checkbox" id="manualPlacementMode">
+                        <label for="manualPlacementMode">Enable Manual Centroid Placement</label>
+                    </div>
+                    <button class="btn btn-secondary" onclick="clearManualCentroids()" id="clearManualBtn" style="width: 100%; margin-bottom: var(--spacing-md);">
+                        Clear Placed Centroids
+                    </button>
+                    <div id="placementHint" style="display: none; padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-lg); font-size: 0.875rem; color: var(--text-secondary); border: 1px solid var(--border-color);">
+                        <strong style="color: var(--text-primary); font-weight: 600;">Click on the plot to place centroids</strong><br>
+                        <span style="margin-top: var(--spacing-xs); display: inline-block;">Placed: <span id="placedCount" style="font-weight: 600; color: var(--primary);">0</span> / <span id="requiredCount" style="font-weight: 600;">3</span></span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Section - Sticky at bottom -->
+                <div class="control-section actions">
+                    <h3>Actions</h3>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="initializeKMeans()" id="initBtn">
+                            Initialize
+                        </button>
+                        <button class="btn btn-success" onclick="nextStep()" id="nextBtn" disabled>
+                            Next Step
+                        </button>
+                        <button class="btn btn-warning" onclick="runToConvergence()" id="runBtn" disabled>
+                            Run to Convergence
+                        </button>
+                        <button class="btn btn-danger" onclick="reset()" id="resetBtn" disabled>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Visualization Area -->
+            <div class="visualization-area">
+                <div id="errorContainer"></div>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('main')">Main Visualization</button>
+                    <button class="tab" onclick="switchTab('wcss')">WCSS Optimization</button>
+                    <button class="tab" onclick="switchTab('math')">Mathematical Details</button>
+                </div>
+
+                <!-- Main Visualization Tab -->
+                <div id="mainTab" class="tab-content active">
+                    <div class="iteration-controls">
+                        <div class="iteration-info">
+                            <span style="font-weight: 500; color: var(--text-secondary); font-size: 0.875rem;">Iteration:</span>
+                            <span id="currentIter" style="color: var(--primary); font-weight: 700; font-size: 1.125rem; min-width: 30px; text-align: center;">0</span>
+                            <span style="color: var(--text-tertiary);">/</span>
+                            <span id="maxIter" style="color: var(--text-secondary); font-weight: 500;">0</span>
+                        </div>
+                        <input type="range" id="iterationSlider" min="0" max="0" value="0" 
+                               oninput="goToIteration(this.value)" class="iteration-slider">
+                    </div>
+
+                    <div class="metric-cards">
+                        <div class="metric-card">
+                            <h4>WCSS (Inertia)</h4>
+                            <div class="value" id="inertiaValue">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Centroid Movement</h4>
+                            <div class="value" id="movementValue">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Converged</h4>
+                            <div class="value" id="convergedValue">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Runtime</h4>
+                            <div class="value" id="runtimeValue">-</div>
+                        </div>
+                    </div>
+
+                    <div class="plot-container">
+                        <div class="plot-title">K-Means Clustering Visualization</div>
+                        <div id="mainPlot" style="background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-md); border: 1px solid var(--border-color); min-height: 600px; width: 100%; box-sizing: border-box; overflow: hidden;"></div>
+                    </div>
+                </div>
+
+                <!-- WCSS Tab -->
+                <div id="wcssTab" class="tab-content">
+                    <div class="plot-container">
+                        <div class="plot-title">Within-Cluster Sum of Squares (WCSS) Optimization</div>
+                        <div id="wcssPlot" style="background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-md); border: 1px solid var(--border-color); min-height: 400px;"></div>
+                    </div>
+                </div>
+
+                <!-- Math Tab -->
+                <div id="mathTab" class="tab-content">
+                    <div class="info-panel" id="currentStepInfo">
+                        <h4>📖 Current Step Explanation</h4>
+                        <div id="stepExplanation" style="padding: 15px; background: white; border-radius: 8px; margin-top: 10px;">
+                            <p style="color: var(--gray);">Initialize the algorithm to see step-by-step explanations.</p>
+                        </div>
+                    </div>
+                    <div class="info-panel">
+                        <h4>📐 Mathematical Formulas</h4>
+                        <div class="formula-box">
+                            <strong>Euclidean Distance:</strong><br>
+                            d(x, c) = √[(x₁ - c₁)² + (x₂ - c₂)² + ... + (xₙ - cₙ)²]
+                        </div>
+                        <div class="formula-box">
+                            <strong>Centroid Update:</strong><br>
+                            c_new = (1/n) × Σx_i  for all points x_i in cluster
+                        </div>
+                        <div class="formula-box">
+                            <strong>WCSS Objective Function:</strong><br>
+                            J = Σᵢ₌₁ⁿ Σⱼ₌₁ᵏ ||xᵢ - μⱼ||²
+                        </div>
+                    </div>
+                    <div class="info-panel">
+                        <h4>📚 Algorithm Steps (Lloyd's Algorithm)</h4>
+                        <ol style="padding-left: 20px; line-height: 2;">
+                            <li id="step1"><strong>Initialization:</strong> Randomly place k centroids</li>
+                            <li id="step2"><strong>Assignment Step:</strong> Assign each point to nearest centroid</li>
+                            <li id="step3"><strong>Update Step:</strong> Recalculate centroids as cluster means</li>
+                            <li id="step4"><strong>Convergence Check:</strong> Stop if centroids don't move significantly</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Global state
+        let traceData = null;
+        let currentIteration = 0;
+        let animationRunning = false;
+        let animationInterval = null;
+        let svgMain = null, svgWCSS = null;
+        let mainWidth = 0, mainHeight = 0;
+        let margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        let colorScale = null;
+        let xScale = null, yScale = null, zScale = null;
+        let manualCentroids = [];  // Store manually placed centroids
+        let placementMode = false;
+        let dataBounds = null;  // Store data bounds for coordinate conversion
+        let fixedPlotBounds = null;  // Store fixed bounds across all iterations to prevent shifting
+
+        // Detect API base URL - handle file:// protocol and localhost
+        let API_BASE_URL = 'http://localhost:8000';
+        if (window.location.protocol === 'file:') {
+            // If opened as file, always use localhost
+            API_BASE_URL = 'http://localhost:8000';
+        } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            // If on localhost, use the same port or default to 8000
+            API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
+        } else {
+            // Production - use same origin
+            API_BASE_URL = window.location.origin;
+        }
+        
+        console.log('API Base URL:', API_BASE_URL);
+
+        // Initialize sliders
+        document.getElementById('nClusters').addEventListener('input', (e) => {
+            document.getElementById('nClustersValue').textContent = e.target.value;
+        });
+
+        document.getElementById('nSamples').addEventListener('input', (e) => {
+            document.getElementById('nSamplesValue').textContent = e.target.value;
+        });
+
+        document.getElementById('blobVariance').addEventListener('input', (e) => {
+            document.getElementById('blobVarianceValue').textContent = e.target.value;
+        });
+
+        document.getElementById('nFeatures').addEventListener('change', (e) => {
+            // Clear manual centroids when switching dimensions (2D <-> 3D)
+            if (placementMode && manualCentroids.length > 0) {
+                manualCentroids = [];
+                updatePlacementHint();
+                if (traceData && traceData.meta) {
+                    updateManualPlacementDisplay();
+                }
+            }
+            if (e.target.value === '3') {
+                document.getElementById('dataType').value = 'blobs';
+                document.getElementById('showVoronoi').checked = false;
+                document.getElementById('showVoronoi').disabled = true;
+            } else {
+                document.getElementById('showVoronoi').disabled = false;
+            }
+        });
+
+        // Manual placement mode toggle
+        document.getElementById('manualPlacementMode').addEventListener('change', (e) => {
+            placementMode = e.target.checked;
+            const hint = document.getElementById('placementHint');
+            if (placementMode) {
+                hint.style.display = 'block';
+                const requiredCount = parseInt(document.getElementById('nClusters').value);
+                document.getElementById('requiredCount').textContent = requiredCount;
+                updatePlacementHint();
+                // Show manual placement display if we have centroids or need to initialize plot
+                if (manualCentroids.length > 0 || !traceData) {
+                    updateManualPlacementDisplay();
+                }
+            } else {
+                hint.style.display = 'none';
+                // Clear manual centroids when disabling placement mode
+                manualCentroids = [];
+            }
+            // Redraw plot to show/hide placement mode
+            if (traceData && svgMain) {
+                updateMainPlot(traceData.steps[currentIteration]);
+            } else if (placementMode) {
+                updateManualPlacementDisplay();
+            }
+        });
+
+        // Update placement hint when cluster count changes
+        document.getElementById('nClusters').addEventListener('input', (e) => {
+            if (placementMode) {
+                document.getElementById('requiredCount').textContent = e.target.value;
+                updatePlacementHint();
+            }
+        });
+
+        function updatePlacementHint() {
+            const placed = manualCentroids.length;
+            const required = parseInt(document.getElementById('nClusters').value);
+            document.getElementById('placedCount').textContent = placed;
+            
+            if (placed >= required) {
+                document.getElementById('placementHint').style.background = '#d1fae5';
+                document.getElementById('placementHint').style.color = '#065f46';
+                document.getElementById('initBtn').disabled = false;
+            } else {
+                document.getElementById('placementHint').style.background = '#fef3c7';
+                document.getElementById('placementHint').style.color = '#92400e';
+                document.getElementById('initBtn').disabled = false; // Allow initialization even with fewer centroids
+            }
+        }
+
+        function clearManualCentroids() {
+            manualCentroids = [];
+            updatePlacementHint();
+            
+            if (!placementMode) return;
+            
+            // Check if we're in 3D mode
+            const is3D = traceData && traceData.meta && traceData.meta.d === 3;
+            
+            if (is3D) {
+                // For 3D, update the 3D manual placement display
+                if (traceData && traceData.meta && traceData.meta.data_points) {
+                    update3DManualPlacement();
+                }
+            } else {
+                // For 2D, check if traceData has steps (real K-Means results) or just data for manual placement
+                if (svgMain) {
+                    if (traceData && traceData.steps && traceData.steps.length > 0 && traceData.steps[currentIteration]) {
+                        updateMainPlot(traceData.steps[currentIteration]);
+                    } else {
+                        updateManualPlacementDisplay();
+                    }
+                } else if (traceData && traceData.meta && traceData.meta.data_points) {
+                    // No svgMain yet, but we have data - initialize display
+                    updateManualPlacementDisplay();
+                }
+            }
+        }
+
+        function handlePlotClick(event) {
+            if (!placementMode) return;
+            
+            // Check if 3D
+            const is3D = traceData && traceData.meta && traceData.meta.d === 3;
+            if (is3D) {
+                // 3D placement is handled by Plotly click events in update3DManualPlacement
+                return;
+            }
+            
+            // 2D placement
+            if (!svgMain || !xScale || !yScale) return;
+            
+            const [x, y] = d3.pointer(event, svgMain.node());
+            const dataX = xScale.invert(x);
+            const dataY = yScale.invert(y);
+            
+            // Add centroid (2D)
+            manualCentroids.push([dataX, dataY]);
+            updatePlacementHint();
+            
+            // Redraw to show new centroid
+            // If traceData exists but has no steps yet (manual placement mode), use updateManualPlacementDisplay
+            if (traceData && traceData.steps && traceData.steps.length > 0 && traceData.steps[currentIteration]) {
+                updateMainPlot(traceData.steps[currentIteration]);
+            } else {
+                // Either no traceData yet, or traceData has empty steps array (manual placement mode)
+                updateManualPlacementDisplay();
+            }
+        }
+        
+        function update3DManualPlacement() {
+            try {
+                const container = d3.select('#mainPlot');
+                const containerNode = container.node();
+                
+                if (!containerNode || !traceData || !traceData.meta || !traceData.meta.data_points) {
+                    console.error('Missing data for 3D manual placement');
+                    return;
+                }
+                
+                // Clean up previous instruction divs
+                cleanup3DInstructions();
+                
+                const dataPoints = traceData.meta.data_points;
+                const containerWidth = containerNode.clientWidth;
+                const containerHeight = Math.min(600, window.innerHeight - 400);
+                
+                // Clear container
+                container.html('');
+                
+                // Prepare traces
+                const traces = [];
+                
+                // Data points trace (all in one color for placement mode)
+                traces.push({
+                    x: dataPoints.map(d => d[0]),
+                    y: dataPoints.map(d => d[1]),
+                    z: dataPoints.map(d => d[2]),
+                    mode: 'markers',
+                    type: 'scatter3d',
+                    name: 'Data Points',
+                    marker: {
+                        size: 5,
+                        color: '#94a3b8',
+                        opacity: 0.6,
+                        line: {
+                            color: 'white',
+                            width: 0.5
+                        }
+                    },
+                    hoverinfo: 'text',
+                    hovertext: dataPoints.map((d, i) => `Point ${i}<br>X: ${d[0].toFixed(2)}<br>Y: ${d[1].toFixed(2)}<br>Z: ${d[2].toFixed(2)}`)
+                });
+                
+                // Manual centroids trace
+                if (manualCentroids.length > 0) {
+                    const tempColorScale = d3.scaleOrdinal(d3.schemeCategory10);
+                    traces.push({
+                        x: manualCentroids.map(c => c[0]),
+                        y: manualCentroids.map(c => c[1]),
+                        z: manualCentroids.map(c => c[2] || 0), // Support 2D centroids (z=0)
+                        mode: 'markers+text',
+                        type: 'scatter3d',
+                        name: 'Manual Centroids',
+                        marker: {
+                            size: 12,
+                            color: manualCentroids.map((c, i) => d3.rgb(tempColorScale(i)).toString()),
+                            symbol: 'diamond',
+                            opacity: 0.9,
+                            line: {
+                                color: 'black',
+                                width: 2
+                            }
+                        },
+                        text: manualCentroids.map((c, i) => `M${i + 1}`),
+                        textposition: 'top center',
+                        textfont: {
+                            size: 14,
+                            color: 'black'
+                        },
+                        hoverinfo: 'text',
+                        hovertext: manualCentroids.map((c, i) => `Manual Centroid ${i + 1}<br>X: ${c[0].toFixed(2)}<br>Y: ${c[1].toFixed(2)}<br>Z: ${(c[2] || 0).toFixed(2)}`)
+                    });
+                }
+                
+                // Calculate data bounds for helper grid
+                const xExtent = d3.extent(dataPoints.map(d => d[0]));
+                const yExtent = d3.extent(dataPoints.map(d => d[1]));
+                const zExtent = d3.extent(dataPoints.map(d => d[2]));
+                
+                // Add very dense invisible helper points in a grid to allow clicking/hovering anywhere
+                // Using a dense grid (25x25x25) for excellent hover coverage with overlapping points
+                // This creates ~17,000 points but they're nearly invisible so performance should be acceptable
+                const gridSize = 25;
+                const helperPoints = [];
+                for (let i = 0; i <= gridSize; i++) {
+                    for (let j = 0; j <= gridSize; j++) {
+                        for (let k = 0; k <= gridSize; k++) {
+                            helperPoints.push({
+                                x: xExtent[0] + (xExtent[1] - xExtent[0]) * (i / gridSize),
+                                y: yExtent[0] + (yExtent[1] - yExtent[0]) * (j / gridSize),
+                                z: zExtent[0] + (zExtent[1] - zExtent[0]) * (k / gridSize)
+                            });
+                        }
+                    }
+                }
+                
+                // Add invisible helper trace for clicking/hovering anywhere
+                // Make them larger and slightly more visible for better hover detection
+                traces.push({
+                    x: helperPoints.map(p => p.x),
+                    y: helperPoints.map(p => p.y),
+                    z: helperPoints.map(p => p.z),
+                    mode: 'markers',
+                    type: 'scatter3d',
+                    name: '_helper_points',
+                    marker: {
+                        size: 6, // Larger size for better hover detection and overlap
+                        opacity: 0.08, // Slightly more visible for better hover detection
+                        color: '#cbd5e1',
+                        line: {
+                            width: 0
+                        }
+                    },
+                    hoverinfo: 'text',
+                    hovertext: helperPoints.map((p, i) => `X: ${p.x.toFixed(2)}<br>Y: ${p.y.toFixed(2)}<br>Z: ${p.z.toFixed(2)}`),
+                    showlegend: false
+                });
+                
+                const layout = {
+                    title: 'Click on the plot to place centroids (3D)',
+                    scene: {
+                        xaxis: { title: 'X-axis', autorange: true },
+                        yaxis: { title: 'Y-axis', autorange: true },
+                        zaxis: { title: 'Z-axis', autorange: true },
+                        aspectmode: 'auto',
+                        camera: {
+                            eye: { x: 1.5, y: 1.5, z: 1.5 }
+                        }
+                    },
+                    margin: { l: 0, r: 0, b: 0, t: 50 },
+                    height: containerHeight,
+                    width: containerWidth,
+                    showlegend: true
+                };
+                
+                const config = {
+                    displayModeBar: true,
+                    displaylogo: false,
+                    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                    responsive: true
+                };
+                
+                // Store hover coordinates for placing centroids
+                let hoveredCoords = null;
+                
+                Plotly.newPlot(containerNode, traces, layout, config).then(() => {
+                    // Add click handler for 3D plot - clicking on data points or helper points
+                    containerNode.on('plotly_click', function(data) {
+                        if (!placementMode) return;
+                        
+                        if (data.points && data.points.length > 0) {
+                            const point = data.points[0];
+                            // Check if it's a helper point (invisible grid point)
+                            if (point.data && point.data.name === '_helper_points') {
+                                // Use the helper point coordinates directly
+                                const x = point.x;
+                                const y = point.y;
+                                const z = point.z;
+                                
+                                // Add centroid (3D)
+                                manualCentroids.push([x, y, z]);
+                                updatePlacementHint();
+                                update3DManualPlacement();
+                            } else {
+                                // Clicked on a visible data point
+                                const x = point.x;
+                                const y = point.y;
+                                const z = point.z;
+                                
+                                // Add centroid (3D)
+                                manualCentroids.push([x, y, z]);
+                                updatePlacementHint();
+                                update3DManualPlacement();
+                            }
+                        }
+                    });
+                    
+                    // Use hover to capture coordinates from data points or helper points
+                    containerNode.on('plotly_hover', function(data) {
+                        if (!placementMode) return;
+                        
+                        if (data.points && data.points.length > 0) {
+                            const point = data.points[0];
+                            hoveredCoords = {
+                                x: point.x,
+                                y: point.y,
+                                z: point.z
+                            };
+                            // Update the coordinate inputs with hovered coordinates
+                            const manualX = document.getElementById('manualX');
+                            const manualY = document.getElementById('manualY');
+                            const manualZ = document.getElementById('manualZ');
+                            if (manualX && manualY && manualZ) {
+                                manualX.value = hoveredCoords.x.toFixed(2);
+                                manualY.value = hoveredCoords.y.toFixed(2);
+                                manualZ.value = hoveredCoords.z.toFixed(2);
+                            }
+                        }
+                    });
+                });
+                
+                // Add coordinate input UI for manual entry or using hover coordinates
+                const coordInputs = document.createElement('div');
+                coordInputs.id = 'coordInputs3D';
+                coordInputs.style.cssText = 'position: absolute; bottom: 10px; left: 10px; background: rgba(255,255,255,0.98); padding: 12px; border-radius: 8px; font-size: 12px; z-index: 1000; border: 1px solid #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 300px;';
+                coordInputs.innerHTML = `
+                    <div style="margin-bottom: 8px; font-weight: 600; color: #1e293b;">Add Centroid (3D)</div>
+                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
+                        <label style="font-size: 11px;">X:</label>
+                        <input type="number" id="manualX" step="0.1" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;">
+                        <label style="font-size: 11px;">Y:</label>
+                        <input type="number" id="manualY" step="0.1" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;">
+                        <label style="font-size: 11px;">Z:</label>
+                        <input type="number" id="manualZ" step="0.1" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;">
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button id="addManualCentroid" style="flex: 1; padding: 6px; cursor: pointer; background: #2563eb; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: 500;">Add Centroid</button>
+                        <button id="useHoveredCoords" style="flex: 1; padding: 6px; cursor: pointer; background: #64748b; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: 500;">Use Hovered</button>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 10px; color: #64748b; line-height: 1.4;">
+                        💡 Click anywhere in the 3D space to place centroids, or enter coordinates manually
+                    </div>
+                `;
+                containerNode.style.position = 'relative';
+                containerNode.appendChild(coordInputs);
+                
+                // Add button handlers
+                document.getElementById('addManualCentroid').addEventListener('click', function() {
+                    if (!placementMode) return;
+                    
+                    const x = parseFloat(document.getElementById('manualX').value);
+                    const y = parseFloat(document.getElementById('manualY').value);
+                    const z = parseFloat(document.getElementById('manualZ').value);
+                    
+                    if (isNaN(x) || isNaN(y) || isNaN(z)) {
+                        alert('Please enter valid coordinates for X, Y, and Z');
+                        return;
+                    }
+                    
+                    manualCentroids.push([x, y, z]);
+                    updatePlacementHint();
+                    update3DManualPlacement();
+                    
+                    // Clear inputs
+                    document.getElementById('manualX').value = '';
+                    document.getElementById('manualY').value = '';
+                    document.getElementById('manualZ').value = '';
+                });
+                
+                document.getElementById('useHoveredCoords').addEventListener('click', function() {
+                    if (!placementMode) return;
+                    
+                    if (hoveredCoords) {
+                        manualCentroids.push([hoveredCoords.x, hoveredCoords.y, hoveredCoords.z]);
+                        updatePlacementHint();
+                        update3DManualPlacement();
+                        
+                        // Clear inputs
+                        document.getElementById('manualX').value = '';
+                        document.getElementById('manualY').value = '';
+                        document.getElementById('manualZ').value = '';
+                    } else {
+                        alert('Hover over a data point first to capture its coordinates');
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error in update3DManualPlacement:', error);
+                const container = d3.select('#mainPlot');
+                container.html(`<div class="error">Error rendering 3D manual placement: ${error.message}</div>`);
+            }
+        }
+        
+        // Clean up instruction divs when switching away from 3D manual placement
+        function cleanup3DInstructions() {
+            const container = d3.select('#mainPlot').node();
+            if (container) {
+                const coordInputs = document.getElementById('coordInputs3D');
+                if (coordInputs) {
+                    coordInputs.remove();
+                }
+            }
+        }
+
+        function updateManualPlacementDisplay() {
+            const container = d3.select('#mainPlot');
+            
+            // Check if this is 3D data
+            const is3D = traceData && traceData.meta && traceData.meta.d === 3;
+            
+            if (is3D) {
+                // Handle 3D manual placement with Plotly
+                update3DManualPlacement();
+                return;
+            }
+            
+            // If we have traceData with data points, use those bounds (2D only)
+            if (traceData && traceData.meta && traceData.meta.data_points && traceData.meta.data_points.length > 0) {
+                const dataPoints = traceData.meta.data_points;
+                
+                if (!svgMain || !xScale || !yScale) {
+                    container.selectAll('*').remove();
+                    
+                    const containerNode = container.node();
+                    const containerStyle = window.getComputedStyle(containerNode);
+                    const containerPadding = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+                    const availableWidth = containerNode.clientWidth - containerPadding;
+                    mainWidth = Math.max(400, availableWidth - margin.left - margin.right);
+                    mainHeight = Math.min(600, window.innerHeight - 400) - margin.top - margin.bottom;
+                    
+                    const allX = dataPoints.map(d => d[0]);
+                    const allY = dataPoints.map(d => d[1]);
+                    
+                    const xExtent = d3.extent(allX);
+                    const yExtent = d3.extent(allY);
+                    
+                    // Use fixed bounds if available, otherwise calculate new ones
+                    if (!fixedPlotBounds) {
+                        const xPadding = Math.max(2, (xExtent[1] - xExtent[0]) * 0.15);
+                        const yPadding = Math.max(2, (yExtent[1] - yExtent[0]) * 0.15);
+                        
+                        fixedPlotBounds = {
+                            xMin: xExtent[0] - xPadding,
+                            xMax: xExtent[1] + xPadding,
+                            yMin: yExtent[0] - yPadding,
+                            yMax: yExtent[1] + yPadding
+                        };
+                    }
+                    
+                    dataBounds = {
+                        xMin: xExtent[0],
+                        xMax: xExtent[1],
+                        yMin: yExtent[0],
+                        yMax: yExtent[1]
+                    };
+                    
+                    xScale = d3.scaleLinear()
+                        .domain([fixedPlotBounds.xMin, fixedPlotBounds.xMax])
+                        .range([0, mainWidth]);
+                    
+                    yScale = d3.scaleLinear()
+                        .domain([fixedPlotBounds.yMin, fixedPlotBounds.yMax])
+                        .range([mainHeight, 0]);
+                    
+                    const maxSvgWidth = availableWidth || containerNode.clientWidth;
+                    const svgWidth = Math.min(mainWidth + margin.left + margin.right, maxSvgWidth);
+                    
+                    svgMain = container.append('svg')
+                        .attr('width', svgWidth)
+                        .attr('height', mainHeight + margin.top + margin.bottom)
+                        .style('max-width', '100%')
+                        .style('overflow', 'visible')
+                        .append('g')
+                        .attr('transform', `translate(${margin.left},${margin.top})`)
+                        .style('cursor', 'crosshair');
+                    
+                    // Background for clicks
+                    svgMain.append('rect')
+                        .attr('class', 'clickable-background')
+                        .attr('width', mainWidth)
+                        .attr('height', mainHeight)
+                        .attr('fill', '#f9fafb')
+                        .attr('stroke', '#e5e7eb')
+                        .attr('stroke-width', 1)
+                        .style('cursor', 'crosshair')
+                        .style('pointer-events', 'all')
+                        .on('click', handlePlotClick);
+                    
+                    // Add axes
+                    svgMain.append('g')
+                        .attr('transform', `translate(0,${mainHeight})`)
+                        .call(d3.axisBottom(xScale))
+                        .append('text')
+                        .attr('x', mainWidth / 2)
+                        .attr('y', 40)
+                        .attr('fill', 'currentColor')
+                        .style('text-anchor', 'middle')
+                        .style('font-weight', '600')
+                        .text('X');
+                    
+                    svgMain.append('g')
+                        .call(d3.axisLeft(yScale))
+                        .append('text')
+                        .attr('transform', 'rotate(-90)')
+                        .attr('y', -40)
+                        .attr('x', -mainHeight / 2)
+                        .attr('fill', 'currentColor')
+                        .style('text-anchor', 'middle')
+                        .style('font-weight', '600')
+                        .text('Y');
+                    
+                    // Show data points
+                    svgMain.selectAll('.data-point')
+                        .data(dataPoints.map((d, i) => ({ point: d, index: i })))
+                        .enter()
+                        .append('circle')
+                        .attr('class', 'data-point')
+                        .attr('cx', d => xScale(d.point[0]))
+                        .attr('cy', d => yScale(d.point[1]))
+                        .attr('r', 12)
+                        .attr('fill', '#999')
+                        .attr('opacity', 0.6)
+                        .attr('stroke', 'white')
+                        .attr('stroke-width', 2);
+                } else {
+                    // Ensure data points are shown even if svg already exists
+                    svgMain.selectAll('.data-point').remove();
+                    svgMain.selectAll('.data-point')
+                        .data(dataPoints.map((d, i) => ({ point: d, index: i })))
+                        .enter()
+                        .append('circle')
+                        .attr('class', 'data-point')
+                        .attr('cx', d => xScale(d.point[0]))
+                        .attr('cy', d => yScale(d.point[1]))
+                        .attr('r', 12)
+                        .attr('fill', '#999')
+                        .attr('opacity', 0.6)
+                        .attr('stroke', 'white')
+                        .attr('stroke-width', 2);
+                }
+            } else if (!svgMain || !xScale || !yScale) {
+                // Initialize basic scales if we don't have data yet
+                container.selectAll('*').remove();
+                
+                const containerNode = container.node();
+                const containerStyle = window.getComputedStyle(containerNode);
+                const containerPadding = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+                const availableWidth = containerNode.clientWidth - containerPadding;
+                mainWidth = Math.max(400, availableWidth - margin.left - margin.right);
+                mainHeight = Math.min(600, window.innerHeight - 400) - margin.top - margin.bottom;
+                
+                // Create basic scales
+                xScale = d3.scaleLinear()
+                    .domain([-10, 10])
+                    .range([0, mainWidth]);
+                yScale = d3.scaleLinear()
+                    .domain([-10, 10])
+                    .range([mainHeight, 0]);
+                
+                const maxSvgWidth = availableWidth || containerNode.clientWidth;
+                const svgWidth = Math.min(mainWidth + margin.left + margin.right, maxSvgWidth);
+                
+                svgMain = container.append('svg')
+                    .attr('width', svgWidth)
+                    .attr('height', mainHeight + margin.top + margin.bottom)
+                    .style('max-width', '100%')
+                    .style('overflow', 'visible')
+                    .append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`)
+                    .style('cursor', 'crosshair');
+                
+                // Background for clicks
+                svgMain.append('rect')
+                    .attr('class', 'clickable-background')
+                    .attr('width', mainWidth)
+                    .attr('height', mainHeight)
+                    .attr('fill', '#f9fafb')
+                    .attr('stroke', '#e5e7eb')
+                    .attr('stroke-width', 1)
+                    .style('cursor', 'crosshair')
+                    .style('pointer-events', 'all')
+                    .on('click', handlePlotClick);
+                
+                // Add axes
+                svgMain.append('g')
+                    .attr('transform', `translate(0,${mainHeight})`)
+                    .call(d3.axisBottom(xScale));
+                
+                svgMain.append('g')
+                    .call(d3.axisLeft(yScale));
+            }
+            
+            // Remove existing manual centroids
+            svgMain.select('.manual-centroid-group').remove();
+            
+            if (manualCentroids.length === 0) return;
+            
+            // Show manual centroids
+            const manualGroup = svgMain.append('g').attr('class', 'manual-centroid-group');
+            const tempColorScale = d3.scaleOrdinal(d3.schemeCategory10);
+            
+            manualCentroids.forEach((centroid, idx) => {
+                const g = manualGroup.append('g')
+                    .attr('class', 'manual-centroid')
+                    .attr('transform', `translate(${xScale(centroid[0])},${yScale(centroid[1])})`)
+                    .style('cursor', 'pointer')
+                    .style('pointer-events', 'all');
+                
+                g.append('circle')
+                    .attr('r', 15)
+                    .attr('fill', tempColorScale(idx))
+                    .attr('opacity', 0.3);
+                
+                g.append('polygon')
+                    .attr('points', '-10,-10 10,-10 0,10')
+                    .attr('fill', tempColorScale(idx))
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 2);
+                
+                g.append('text')
+                    .attr('y', 25)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-weight', '700')
+                    .attr('font-size', '12px')
+                    .text(`M${idx + 1}`);
+                
+                // Dragging
+                g.call(d3.drag()
+                    .on('start', function(event) {
+                        d3.select(this).raise().style('opacity', 0.8);
+                    })
+                    .on('drag', function(event) {
+                        const [x, y] = d3.pointer(event, svgMain.node());
+                        const dataX = xScale.invert(x);
+                        const dataY = yScale.invert(y);
+                        manualCentroids[idx] = [dataX, dataY];
+                        d3.select(this).attr('transform', `translate(${x},${y})`);
+                    })
+                    .on('end', function(event) {
+                        d3.select(this).style('opacity', 1);
+                    }));
+                
+                // Double-click to remove
+                g.on('dblclick', function(event) {
+                    event.stopPropagation();
+                    manualCentroids.splice(idx, 1);
+                    updatePlacementHint();
+                    updateManualPlacementDisplay();
+                });
+            });
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Error handling
+        function showError(message) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="error">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        // Initialize K-Means
+        async function initializeKMeans() {
+            document.getElementById('mainPlot').innerHTML = '<div class="loading">Loading data and running K-Means...</div>';
+            animationRunning = false;
+            if (animationInterval) clearInterval(animationInterval);
+            
+            const datasetParams = {
+                data_type: document.getElementById('dataType').value,
+                n_samples: parseInt(document.getElementById('nSamples').value),
+                n_centers: parseInt(document.getElementById('nClusters').value),
+                random_state: parseInt(document.getElementById('randomState').value),
+                n_features: parseInt(document.getElementById('nFeatures').value),
+                noise: parseFloat(document.getElementById('blobVariance').value),
+                separation: 1.0,
+                bounds: [-10, 10],
+                factor: 0.5
+            };
+
+            const nClusters = parseInt(document.getElementById('nClusters').value);
+            const algoParams = {
+                n_clusters: nClusters,
+                max_iters: parseInt(document.getElementById('maxIters').value),
+                tolerance: parseFloat(document.getElementById('tolerance').value),
+                random_state: parseInt(document.getElementById('randomState').value),
+                init_method: document.getElementById('initMethod').value
+            };
+
+            // Check if using manual centroids
+            let useManualCentroids = false;
+            if (placementMode) {
+                // Manual placement mode is enabled - require user to place centroids first
+                if (manualCentroids.length === 0) {
+                    // Generate data and show plot without running K-Means
+                    showError('Please place centroids on the plot first. Click on the plot to place centroids, then click Initialize again.');
+                    
+                    // Generate a minimal trace just to get the data points
+                    try {
+                        const tempResponse = await fetch(`${API_BASE_URL}/api/trace/kmeans`, {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ 
+                                dataset: datasetParams, 
+                                algo: { n_clusters: 1, max_iters: 1, tolerance: 1e-4, random_state: algoParams.random_state, init_method: 'kmeans++' }
+                            })
+                        });
+                        
+                        if (tempResponse.ok) {
+                            const tempTrace = await tempResponse.json();
+                            // Store data points for display
+                            if (tempTrace.meta && tempTrace.meta.data_points) {
+                                // Create a minimal traceData structure just for plotting
+                                traceData = {
+                                    meta: tempTrace.meta,
+                                    steps: [],  // No steps yet - will be populated after manual placement
+                                    params: { n_clusters: nClusters }
+                                };
+                                
+                                // Update scales based on data bounds
+                                const dataPoints = tempTrace.meta.data_points;
+                                const allX = dataPoints.map(d => d[0]);
+                                const allY = dataPoints.map(d => d[1]);
+                                
+                                const container = d3.select('#mainPlot');
+                                container.selectAll('*').remove();
+                                
+                                const containerNode = container.node();
+                                const containerStyle = window.getComputedStyle(containerNode);
+                                const containerPadding = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+                                const availableWidth = containerNode.clientWidth - containerPadding;
+                                mainWidth = Math.max(400, availableWidth - margin.left - margin.right);
+                                mainHeight = Math.min(600, window.innerHeight - 400) - margin.top - margin.bottom;
+                                
+                                const xExtent = d3.extent(allX);
+                                const yExtent = d3.extent(allY);
+                                
+                                // Use fixed bounds if available, otherwise calculate new ones
+                                if (!fixedPlotBounds) {
+                                    const xPadding = Math.max(2, (xExtent[1] - xExtent[0]) * 0.15);
+                                    const yPadding = Math.max(2, (yExtent[1] - yExtent[0]) * 0.15);
+                                    
+                                    fixedPlotBounds = {
+                                        xMin: xExtent[0] - xPadding,
+                                        xMax: xExtent[1] + xPadding,
+                                        yMin: yExtent[0] - yPadding,
+                                        yMax: yExtent[1] + yPadding
+                                    };
+                                }
+                                
+                                dataBounds = {
+                                    xMin: xExtent[0],
+                                    xMax: xExtent[1],
+                                    yMin: yExtent[0],
+                                    yMax: yExtent[1]
+                                };
+                                
+                                xScale = d3.scaleLinear()
+                                    .domain([fixedPlotBounds.xMin, fixedPlotBounds.xMax])
+                                    .range([0, mainWidth]);
+                                
+                                yScale = d3.scaleLinear()
+                                    .domain([fixedPlotBounds.yMin, fixedPlotBounds.yMax])
+                                    .range([mainHeight, 0]);
+                                
+                                // Create SVG
+                                const maxSvgWidth = availableWidth || containerNode.clientWidth;
+                                const svgWidth = Math.min(mainWidth + margin.left + margin.right, maxSvgWidth);
+                                
+                                svgMain = container.append('svg')
+                                    .attr('width', svgWidth)
+                                    .attr('height', mainHeight + margin.top + margin.bottom)
+                                    .style('max-width', '100%')
+                                    .style('overflow', 'visible')
+                                    .append('g')
+                                    .attr('transform', `translate(${margin.left},${margin.top})`)
+                                    .style('cursor', 'crosshair');
+                                
+                                // Background for clicks
+                                svgMain.append('rect')
+                                    .attr('class', 'clickable-background')
+                                    .attr('width', mainWidth)
+                                    .attr('height', mainHeight)
+                                    .attr('fill', '#f9fafb')
+                                    .attr('stroke', '#e5e7eb')
+                                    .attr('stroke-width', 1)
+                                    .style('cursor', 'crosshair')
+                                    .style('pointer-events', 'all')
+                                    .on('click', handlePlotClick);
+                                
+                                // Add axes
+                                svgMain.append('g')
+                                    .attr('transform', `translate(0,${mainHeight})`)
+                                    .call(d3.axisBottom(xScale))
+                                    .append('text')
+                                    .attr('x', mainWidth / 2)
+                                    .attr('y', 40)
+                                    .attr('fill', 'currentColor')
+                                    .style('text-anchor', 'middle')
+                                    .style('font-weight', '600')
+                                    .text('X');
+                                
+                                svgMain.append('g')
+                                    .call(d3.axisLeft(yScale))
+                                    .append('text')
+                                    .attr('transform', 'rotate(-90)')
+                                    .attr('y', -40)
+                                    .attr('x', -mainHeight / 2)
+                                    .attr('fill', 'currentColor')
+                                    .style('text-anchor', 'middle')
+                                    .style('font-weight', '600')
+                                    .text('Y');
+                                
+                                // Show data points (without centroids - user will place them)
+                                svgMain.selectAll('.data-point')
+                                    .data(dataPoints.map((d, i) => ({ point: d, index: i })))
+                                    .enter()
+                                    .append('circle')
+                                    .attr('class', 'data-point')
+                                    .attr('cx', d => xScale(d.point[0]))
+                                    .attr('cy', d => yScale(d.point[1]))
+                                    .attr('r', 12)
+                                    .attr('fill', '#999')
+                                    .attr('opacity', 0.6)
+                                    .attr('stroke', 'white')
+                                    .attr('stroke-width', 2);
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Error preparing plot:', err);
+                        showError(`Failed to prepare plot: ${err.message}`);
+                    }
+                    return; // Don't proceed with K-Means until centroids are placed
+                }
+                
+                useManualCentroids = true;
+                // Use exactly the centroids the user placed (trim if too many, don't auto-fill)
+                if (manualCentroids.length > nClusters) {
+                    // Trim to match n_clusters
+                    manualCentroids = manualCentroids.slice(0, nClusters);
+                } else if (manualCentroids.length < nClusters) {
+                    // Require user to place all centroids
+                    showError(`Please place all ${nClusters} centroids. Currently placed: ${manualCentroids.length}`);
+                    return;
+                }
+                algoParams.initial_centroids = manualCentroids;
+                console.log('Using manually placed centroids (no auto-initialization):', manualCentroids);
+            }
+
+            try {
+                console.log('Sending request to:', `${API_BASE_URL}/api/trace/kmeans`);
+                console.log('Init method selected:', document.getElementById('initMethod').value);
+                console.log('Using manual centroids:', useManualCentroids);
+                console.log('Request body:', { dataset: datasetParams, algo: algoParams });
+                
+                const response = await fetch(`${API_BASE_URL}/api/trace/kmeans`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ dataset: datasetParams, algo: algoParams })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+
+                traceData = await response.json();
+                console.log('Success! Received trace data with', traceData.steps ? traceData.steps.length : 0, 'steps');
+                
+                // Validate response
+                if (!traceData || !traceData.steps || traceData.steps.length === 0) {
+                    throw new Error('Invalid response: No steps found in trace data');
+                }
+                
+                // Reset fixed plot bounds when new data is loaded
+                fixedPlotBounds = null;
+                
+                // Verify manual centroids were used (if in manual mode)
+                if (useManualCentroids && traceData.steps.length > 0) {
+                    const initialCentroids = traceData.steps[0].payload.centroids.map(c => c.position);
+                    console.log('Manual centroids used:', initialCentroids);
+                } else if (traceData.steps.length > 0) {
+                    console.log('Initial centroids (iteration 0):', traceData.steps[0].payload.centroids);
+                }
+                
+                currentIteration = 0;
+                
+                const maxIter = traceData.steps.length - 1;
+                document.getElementById('iterationSlider').max = maxIter;
+                document.getElementById('maxIter').textContent = maxIter;
+                
+                // Enable buttons
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('resetBtn').disabled = false;
+                
+                // Initialize color scale
+                const nClusters = traceData.params ? traceData.params.n_clusters : (traceData.steps[0] ? traceData.steps[0].payload.centroids.length : 3);
+                colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+                    .domain(d3.range(nClusters));
+                
+                // Clear loading message - don't remove everything, let updateMainPlot handle it
+                // We just need to clear any loading messages
+                const container = d3.select('#mainPlot');
+                const loadingMsg = container.select('.loading');
+                if (!loadingMsg.empty()) {
+                    loadingMsg.remove();
+                }
+                
+                // Reset svgMain since we're starting fresh
+                svgMain = null;
+                
+                updateVisualizations();
+            } catch (error) {
+                showError(`Failed to initialize: ${error.message}`);
+                console.error('Error:', error);
+            }
+        }
+
+        function nextStep() {
+            if (!traceData) return;
+            if (currentIteration < traceData.steps.length - 1) {
+                currentIteration++;
+                document.getElementById('iterationSlider').value = currentIteration;
+                updateVisualizations();
+            }
+        }
+
+        function reset() {
+            animationRunning = false;
+            if (animationInterval) clearInterval(animationInterval);
+            if (traceData) {
+                currentIteration = 0;
+                document.getElementById('iterationSlider').value = 0;
+                updateVisualizations();
+            }
+        }
+
+        function goToIteration(iter) {
+            if (!traceData) return;
+            currentIteration = parseInt(iter);
+            updateVisualizations();
+        }
+
+        function runToConvergence() {
+            if (!traceData || animationRunning) return;
+            animationRunning = true;
+            document.getElementById('runBtn').disabled = true;
+            
+            animationInterval = setInterval(() => {
+                if (currentIteration < traceData.steps.length - 1) {
+                    currentIteration++;
+                    document.getElementById('iterationSlider').value = currentIteration;
+                    updateVisualizations();
+                } else {
+                    animationRunning = false;
+                    document.getElementById('runBtn').disabled = false;
+                    clearInterval(animationInterval);
+                }
+            }, 800);
+        }
+
+        function updateVisualizations() {
+            if (!traceData) return;
+            
+            if (!traceData.steps || traceData.steps.length === 0) {
+                console.error('No steps in traceData:', traceData);
+                showError('No steps found in trace data');
+                return;
+            }
+            
+            if (currentIteration < 0 || currentIteration >= traceData.steps.length) {
+                console.error(`Invalid iteration ${currentIteration}. Steps length: ${traceData.steps.length}`);
+                showError(`Invalid iteration index: ${currentIteration}`);
+                return;
+            }
+            
+            const step = traceData.steps[currentIteration];
+            if (!step || !step.payload) {
+                console.error('Invalid step at iteration', currentIteration, ':', step);
+                showError(`Invalid step data at iteration ${currentIteration}`);
+                return;
+            }
+            
+            try {
+                document.getElementById('currentIter').textContent = currentIteration;
+                
+                // Update metrics with animation
+                const inertiaEl = document.getElementById('inertiaValue');
+                const movementEl = document.getElementById('movementValue');
+                const convergedEl = document.getElementById('convergedValue');
+                const runtimeEl = document.getElementById('runtimeValue');
+                
+                animateValue(inertiaEl, step.payload.inertia ? step.payload.inertia : 0, 2);
+                animateValue(movementEl, step.payload.movement ? step.payload.movement : 0, 4);
+                convergedEl.textContent = step.payload.converged ? 'Yes ✓' : 'No';
+                runtimeEl.textContent = traceData.summary && traceData.summary.runtime_ms ? traceData.summary.runtime_ms.toFixed(2) + 'ms' : '-';
+                
+                // Update step explanation
+                updateStepExplanation(step);
+                
+                // Update visualizations
+                updateMainPlot(step);
+                updateWCSSPlot();
+            } catch (error) {
+                console.error('Error in updateVisualizations:', error);
+                showError(`Error updating visualizations: ${error.message}`);
+            }
+        }
+
+        function animateValue(element, targetValue, decimals) {
+            const currentValue = parseFloat(element.textContent) || 0;
+            const duration = 500;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = currentValue + (targetValue - currentValue) * easeOut;
+                
+                element.textContent = current.toFixed(decimals);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        function updateStepExplanation(step) {
+            const explanationDiv = document.getElementById('stepExplanation');
+            const stepType = step.type;
+            const iteration = step.payload.iteration;
+            
+            // Reset step highlights
+            ['step1', 'step2', 'step3', 'step4'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.background = 'transparent';
+                    el.style.padding = '0';
+                    el.style.borderRadius = '0';
+                }
+            });
+            
+            let explanation = '';
+            let highlightedStep = null;
+            
+            if (stepType === 'initialization') {
+                explanation = `
+                    <h5 style="color: var(--primary); margin-bottom: 10px; font-weight: 600; font-size: 1rem;">Initialization Step</h5>
+                    <p style="color: var(--text-secondary); line-height: 1.6;">K-Means begins by randomly placing <strong style="color: var(--text-primary);">${traceData.params.n_clusters} centroids</strong> in the data space.</p>
+                    <p style="margin-top: 12px; font-weight: 600; color: var(--text-primary);">What's happening:</p>
+                    <ul style="margin-left: 20px; margin-top: 8px; color: var(--text-secondary); line-height: 1.8;">
+                        <li>${traceData.params.n_clusters} initial centroids are randomly selected from data points</li>
+                        <li>Each point is assigned to its nearest centroid</li>
+                        <li>Initial WCSS (Within-Cluster Sum of Squares): <strong style="color: var(--text-primary);">${step.payload.inertia.toFixed(2)}</strong></li>
+                    </ul>
+                `;
+                highlightedStep = 'step1';
+            } else if (stepType === 'iteration') {
+                const hasMovement = step.payload.movement && step.payload.movement > 0.0001;
+                explanation = `
+                    <h5 style="color: var(--primary); margin-bottom: 12px; font-weight: 600; font-size: 1rem;">Iteration ${iteration}</h5>
+                    <p style="color: var(--text-secondary); line-height: 1.6;"><strong style="color: var(--text-primary);">Assignment Step:</strong> Each point is assigned to the nearest centroid based on Euclidean distance.</p>
+                    <p style="margin-top: 12px; color: var(--text-secondary); line-height: 1.6;"><strong style="color: var(--text-primary);">Update Step:</strong> Centroids are recalculated as the mean of all points in their cluster.</p>
+                    <p style="margin-top: 12px; font-weight: 600; color: var(--text-primary);">Metrics:</p>
+                    <ul style="margin-left: 20px; margin-top: 8px; color: var(--text-secondary); line-height: 1.8;">
+                        <li>WCSS: <strong style="color: var(--text-primary);">${step.payload.inertia.toFixed(2)}</strong> ${iteration > 1 ? '<span style="color: var(--success); font-size: 0.875rem;">(decreased from previous)</span>' : ''}</li>
+                        <li>Centroid Movement: <strong style="color: var(--text-primary);">${step.payload.movement ? step.payload.movement.toFixed(4) : 'N/A'}</strong></li>
+                        <li>Cluster Sizes: <strong style="color: var(--text-primary);">${step.payload.cluster_sizes.join(', ')}</strong></li>
+                    </ul>
+                    ${hasMovement ? '<p style="margin-top: 10px; color: var(--warning); font-weight: 500;">Centroids are still moving - algorithm continues...</p>' : ''}
+                `;
+                highlightedStep = iteration % 2 === 1 ? 'step2' : 'step3';
+            }
+            
+            if (step.payload.converged) {
+                explanation += `
+                    <div style="margin-top: 15px; padding: 16px; background: linear-gradient(135deg, var(--success) 0%, #047857 100%); color: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                        <strong style="font-weight: 600; font-size: 1rem;">Convergence Achieved</strong><br>
+                        <span style="opacity: 0.95; font-size: 0.9375rem; line-height: 1.6;">The algorithm has converged because centroids stopped moving significantly (movement < tolerance).</span><br>
+                        <span style="margin-top: 8px; display: inline-block; font-weight: 600;">Final WCSS: <strong>${step.payload.inertia.toFixed(2)}</strong></span>
+                    </div>
+                `;
+                highlightedStep = 'step4';
+            }
+            
+            explanationDiv.innerHTML = explanation;
+            
+            // Highlight current step
+            if (highlightedStep) {
+                const el = document.getElementById(highlightedStep);
+                if (el) {
+                    el.style.background = 'rgba(37, 99, 235, 0.08)';
+                    el.style.padding = '6px 12px';
+                    el.style.borderRadius = '0.5rem';
+                    el.style.transition = 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+                    el.style.borderLeft = '3px solid #2563eb';
+                }
+            }
+        }
+
+        function updateMainPlot(step) {
+            try {
+                const container = d3.select('#mainPlot');
+                
+                if (!traceData || !traceData.meta) {
+                    console.error('traceData or traceData.meta is missing:', traceData);
+                    container.html('<div class="error">Missing trace data. Please try again.</div>');
+                    return;
+                }
+                
+                if (!step || !step.payload) {
+                    console.error('Invalid step:', step);
+                    container.html('<div class="error">Invalid step data. Please try again.</div>');
+                    return;
+                }
+                
+                if (!step.payload.centroids || step.payload.centroids.length === 0) {
+                    console.error('No centroids in step:', step);
+                    container.html('<div class="error">No centroids found in step data.</div>');
+                    return;
+                }
+                
+                const is3D = traceData.meta.d === 3;
+                const containerNode = container.node();
+                
+                if (!containerNode) {
+                    console.error('mainPlot container not found');
+                    return;
+                }
+                
+                // Calculate available width accounting for container padding
+                const containerStyle = window.getComputedStyle(containerNode);
+                const containerPadding = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+                const availableWidth = containerNode.clientWidth - containerPadding;
+                
+                mainWidth = Math.max(400, availableWidth - margin.left - margin.right);
+                mainHeight = Math.min(600, window.innerHeight - 400) - margin.top - margin.bottom;
+                
+                if (is3D) {
+                    update3DPlot(step);
+                    return;
+                }
+                
+                if (!traceData.meta.data_points || traceData.meta.data_points.length === 0) {
+                    console.error('No data points in traceData.meta:', traceData.meta);
+                    container.html('<div class="error">No data points found in trace data.</div>');
+                    return;
+                }
+                
+                const dataPoints = traceData.meta.data_points;
+                const centroids = step.payload.centroids.map(c => c.position);
+                const labels = step.payload.labels || [];
+                const nClusters = centroids.length;
+                
+                // Calculate fixed bounds from ALL steps to prevent plot shifting
+                // This ensures the plot stays in the same position across iterations
+                if (!fixedPlotBounds) {
+                    // Collect all centroids from all iterations
+                    const allCentroidsX = [];
+                    const allCentroidsY = [];
+                    
+                    traceData.steps.forEach(s => {
+                        if (s.payload && s.payload.centroids) {
+                            s.payload.centroids.forEach(c => {
+                                allCentroidsX.push(c.position[0]);
+                                allCentroidsY.push(c.position[1]);
+                            });
+                        }
+                    });
+                    
+                    // Combine data points and all centroids for fixed bounds
+                    const allX = [...dataPoints.map(d => d[0]), ...allCentroidsX];
+                    const allY = [...dataPoints.map(d => d[1]), ...allCentroidsY];
+                    
+                    const xExtent = d3.extent(allX);
+                    const yExtent = d3.extent(allY);
+                    
+                    // Add padding
+                    const xPadding = Math.max(2, (xExtent[1] - xExtent[0]) * 0.15);
+                    const yPadding = Math.max(2, (yExtent[1] - yExtent[0]) * 0.15);
+                    
+                    fixedPlotBounds = {
+                        xMin: xExtent[0] - xPadding,
+                        xMax: xExtent[1] + xPadding,
+                        yMin: yExtent[0] - yPadding,
+                        yMax: yExtent[1] + yPadding
+                    };
+                }
+                
+                // Store current data bounds for coordinate conversion (for manual placement)
+                const currentX = [...dataPoints.map(d => d[0]), ...centroids.map(c => c[0])];
+                const currentY = [...dataPoints.map(d => d[1]), ...centroids.map(c => c[1])];
+                const currentXExtent = d3.extent(currentX);
+                const currentYExtent = d3.extent(currentY);
+                
+                dataBounds = {
+                    xMin: currentXExtent[0],
+                    xMax: currentXExtent[1],
+                    yMin: currentYExtent[0],
+                    yMax: currentYExtent[1]
+                };
+                
+                // Use fixed bounds for scales to prevent shifting
+                xScale = d3.scaleLinear()
+                    .domain([fixedPlotBounds.xMin, fixedPlotBounds.xMax])
+                    .range([0, mainWidth]);
+                
+                yScale = d3.scaleLinear()
+                    .domain([fixedPlotBounds.yMin, fixedPlotBounds.yMax])
+                    .range([mainHeight, 0]);
+            
+            // Ensure SVG doesn't exceed container width
+            const maxSvgWidth = availableWidth || containerNode.clientWidth;
+            const svgWidth = Math.min(mainWidth + margin.left + margin.right, maxSvgWidth);
+            
+            // Create or reuse SVG - don't remove everything, just update
+            if (!svgMain || svgMain.empty()) {
+                // Remove everything only if svgMain doesn't exist yet
+                container.selectAll('*').remove();
+                
+                svgMain = container.append('svg')
+                    .attr('width', svgWidth)
+                    .attr('height', mainHeight + margin.top + margin.bottom)
+                    .style('max-width', '100%')
+                    .style('overflow', 'visible')
+                    .append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`)
+                    .style('cursor', placementMode ? 'crosshair' : 'default');
+            } else {
+                // Update existing SVG size and transform
+                svgMain.select(function() { return this.parentNode; })
+                    .attr('width', svgWidth)
+                    .attr('height', mainHeight + margin.top + margin.bottom)
+                    .style('max-width', '100%')
+                    .style('overflow', 'visible');
+                svgMain.attr('transform', `translate(${margin.left},${margin.top})`);
+            }
+            
+            // Remove only specific groups that need to be recreated, not everything
+            svgMain.selectAll('.voronoi-group').remove();
+            svgMain.selectAll('.trajectory-group').remove();
+            svgMain.selectAll('.distance-group').remove();
+            svgMain.selectAll('.old-centroid-group').remove();
+            svgMain.selectAll('.manual-centroid-group').remove();
+            // Remove legend from SVG parent (not from svgMain group)
+            const svgParentForCleanup = svgMain.node() ? d3.select(svgMain.node().parentNode) : container.select('svg');
+            svgParentForCleanup.selectAll('.legend').remove();
+            svgParentForCleanup.selectAll('.legend-background').remove();
+            svgMain.selectAll('.axis').remove();
+            // Keep .centroid and .data-point for smooth transitions
+            
+            // Add click handler for manual centroid placement
+            if (placementMode) {
+                // Background rectangle to capture clicks (only if not already exists)
+                if (svgMain.select('.clickable-background').empty()) {
+                    svgMain.insert('rect', ':first-child')
+                        .attr('class', 'clickable-background')
+                        .attr('width', mainWidth)
+                        .attr('height', mainHeight)
+                        .attr('fill', 'transparent')
+                        .style('cursor', 'crosshair')
+                        .style('pointer-events', 'all')
+                        .on('click', function(event) {
+                            handlePlotClick(event);
+                        });
+                }
+            }
+            
+            // Add axes (only once or update existing)
+            let xAxis = svgMain.select('.x-axis');
+            if (xAxis.empty()) {
+                xAxis = svgMain.append('g')
+                    .attr('class', 'axis x-axis')
+                    .attr('transform', `translate(0,${mainHeight})`);
+                xAxis.call(d3.axisBottom(xScale));
+                xAxis.append('text')
+                    .attr('x', mainWidth / 2)
+                    .attr('y', 40)
+                    .attr('fill', 'currentColor')
+                    .style('text-anchor', 'middle')
+                    .style('font-weight', '600')
+                    .text('X');
+            } else {
+                xAxis.attr('transform', `translate(0,${mainHeight})`).call(d3.axisBottom(xScale));
+            }
+            
+            let yAxis = svgMain.select('.y-axis');
+            if (yAxis.empty()) {
+                yAxis = svgMain.append('g')
+                    .attr('class', 'axis y-axis');
+                yAxis.call(d3.axisLeft(yScale));
+                yAxis.append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', -40)
+                    .attr('x', -mainHeight / 2)
+                    .attr('fill', 'currentColor')
+                    .style('text-anchor', 'middle')
+                    .style('font-weight', '600')
+                    .text('Y');
+            } else {
+                yAxis.call(d3.axisLeft(yScale));
+            }
+            
+            // Voronoi regions with fade-in animation
+            if (document.getElementById('showVoronoi').checked && currentIteration > 0) {
+                const voronoi = d3.Delaunay.from(centroids.map(c => [xScale(c[0]), yScale(c[1])]));
+                const voronoiCells = voronoi.voronoi([0, 0, mainWidth, mainHeight]);
+                
+                const voronoiGroup = svgMain.selectAll('.voronoi-group')
+                    .data([null])
+                    .enter()
+                    .append('g')
+                    .attr('class', 'voronoi-group');
+                
+                for (let i = 0; i < centroids.length; i++) {
+                    const cell = voronoiCells.renderCell(i);
+                    if (cell) {
+                        voronoiGroup.append('path')
+                            .attr('d', cell)
+                            .attr('class', 'voronoi-cell')
+                            .attr('fill', colorScale(i))
+                            .attr('opacity', 0)
+                            .transition()
+                            .delay(i * 100)
+                            .duration(500)
+                            .attr('opacity', 0.1);
+                    }
+                }
+            } else {
+                svgMain.selectAll('.voronoi-group').remove();
+            }
+            
+            // Centroid trajectories with animation
+            if (document.getElementById('showTrajectories').checked && currentIteration > 0) {
+                const trajectoryGroup = svgMain.selectAll('.trajectory-group')
+                    .data([null])
+                    .enter()
+                    .append('g')
+                    .attr('class', 'trajectory-group');
+                
+                for (let k = 0; k < nClusters; k++) {
+                    const trajectory = [];
+                    for (let i = 0; i <= currentIteration; i++) {
+                        const c = traceData.steps[i].payload.centroids[k].position;
+                        trajectory.push([xScale(c[0]), yScale(c[1])]);
+                    }
+                    
+                    if (trajectory.length > 1) {
+                        const line = d3.line()
+                            .x(d => d[0])
+                            .y(d => d[1])
+                            .curve(d3.curveCardinal);
+                        
+                        const path = trajectoryGroup.append('path')
+                            .datum(trajectory)
+                            .attr('d', line)
+                            .attr('class', 'trajectory')
+                            .attr('stroke', colorScale(k))
+                            .attr('fill', 'none')
+                            .attr('stroke-width', 2)
+                            .attr('opacity', 0.7)
+                            .attr('stroke-dasharray', function() {
+                                const totalLength = this.getTotalLength();
+                                return totalLength + ' ' + totalLength;
+                            })
+                            .attr('stroke-dashoffset', function() {
+                                return this.getTotalLength();
+                            });
+                        
+                        path.transition()
+                            .duration(1000)
+                            .ease(d3.easeCubicInOut)
+                            .attr('stroke-dashoffset', 0);
+                    }
+                }
+            } else {
+                svgMain.selectAll('.trajectory-group').remove();
+            }
+            
+            // Distance lines with fade-in animation
+            if (document.getElementById('showDistances').checked && currentIteration > 0) {
+                const nSamples = Math.min(15, dataPoints.length);
+                const stepSize = Math.max(1, Math.floor(dataPoints.length / nSamples));
+                
+                const distanceGroup = svgMain.selectAll('.distance-group')
+                    .data([null])
+                    .enter()
+                    .append('g')
+                    .attr('class', 'distance-group');
+                
+                let lineIndex = 0;
+                for (let idx = 0; idx < dataPoints.length; idx += stepSize) {
+                    if (idx >= nSamples * stepSize) break;
+                    const point = dataPoints[idx];
+                    const assignedCluster = labels[idx];
+                    
+                    for (let k = 0; k < nClusters; k++) {
+                        const isAssigned = k === assignedCluster;
+                        distanceGroup.append('line')
+                            .attr('x1', xScale(point[0]))
+                            .attr('y1', yScale(point[1]))
+                            .attr('x2', xScale(point[0]))
+                            .attr('y2', yScale(point[1]))
+                            .attr('class', 'distance-line')
+                            .attr('stroke', isAssigned ? colorScale(k) : '#ccc')
+                            .attr('stroke-width', isAssigned ? 2 : 1)
+                            .attr('stroke-dasharray', isAssigned ? 'none' : '3,3')
+                            .attr('opacity', 0)
+                            .transition()
+                            .delay(lineIndex * 20)
+                            .duration(400)
+                            .attr('x2', xScale(centroids[k][0]))
+                            .attr('y2', yScale(centroids[k][1]))
+                            .attr('opacity', isAssigned ? 0.6 : 0.3);
+                        lineIndex++;
+                    }
+                }
+            } else {
+                svgMain.selectAll('.distance-group').remove();
+            }
+            
+            // Old centroids with movement animation
+            if (step.payload.old_centroids && currentIteration > 0) {
+                const oldCentroidGroup = svgMain.selectAll('.old-centroid-group')
+                    .data([null])
+                    .enter()
+                    .append('g')
+                    .attr('class', 'old-centroid-group');
+                
+                step.payload.old_centroids.forEach((oldCentroid, k) => {
+                    const movement = Math.sqrt(
+                        Math.pow(centroids[k][0] - oldCentroid.position[0], 2) +
+                        Math.pow(centroids[k][1] - oldCentroid.position[1], 2)
+                    );
+                    
+                    if (movement > 0.01) {
+                        const movementLine = oldCentroidGroup.append('line')
+                            .attr('x1', xScale(oldCentroid.position[0]))
+                            .attr('y1', yScale(oldCentroid.position[1]))
+                            .attr('x2', xScale(oldCentroid.position[0]))
+                            .attr('y2', yScale(oldCentroid.position[1]))
+                            .attr('stroke', '#ef4444')
+                            .attr('stroke-width', 3)
+                            .attr('stroke-dasharray', '5,5')
+                            .attr('opacity', 0);
+                        
+                        movementLine.transition()
+                            .duration(600)
+                            .ease(d3.easeCubicOut)
+                            .attr('x2', xScale(centroids[k][0]))
+                            .attr('y2', yScale(centroids[k][1]))
+                            .attr('opacity', 0.7);
+                    }
+                    
+                    oldCentroidGroup.append('circle')
+                        .attr('cx', xScale(oldCentroid.position[0]))
+                        .attr('cy', yScale(oldCentroid.position[1]))
+                        .attr('r', 0)
+                        .attr('fill', colorScale(k))
+                        .attr('opacity', 0.3)
+                        .attr('stroke', colorScale(k))
+                        .attr('stroke-width', 2)
+                        .transition()
+                        .delay(k * 100)
+                        .duration(400)
+                        .attr('r', 8);
+                });
+            } else {
+                svgMain.selectAll('.old-centroid-group').remove();
+            }
+            
+            // Add compact legend in top right corner, outside plot area
+            const legendWidth = 85;
+            const legendItemHeight = 14;
+            const legendPadding = 5;
+            const legendHeight = (nClusters * legendItemHeight) + (legendPadding * 2);
+            // Get parent SVG element to append legend outside plot area
+            const svgParent = svgMain.node() ? d3.select(svgMain.node().parentNode) : container.select('svg');
+            
+            // Position at top right corner of SVG
+            const totalSvgWidth = parseInt(svgParent.attr('width')) || (mainWidth + margin.left + margin.right);
+            const legendX = totalSvgWidth - legendWidth - legendPadding - 10;
+            const legendY = legendPadding + 5;
+            
+            // Create compact background rectangle for legend
+            const legendBg = svgParent.append('rect')
+                .attr('class', 'legend-background')
+                .attr('x', legendX - legendPadding)
+                .attr('y', legendY - legendPadding)
+                .attr('width', legendWidth + (legendPadding * 2))
+                .attr('height', legendHeight)
+                .attr('fill', 'rgba(255, 255, 255, 0.98)')
+                .attr('stroke', '#cbd5e1')
+                .attr('stroke-width', 1)
+                .attr('rx', 4)
+                .attr('opacity', 0.98)
+                .style('filter', 'drop-shadow(0 1px 3px rgba(0,0,0,0.08))');
+            
+            const legend = svgParent.append('g')
+                .attr('class', 'legend')
+                .attr('transform', `translate(${legendX}, ${legendY})`);
+            
+            const legendItems = legend.selectAll('.legend-item')
+                .data(centroids.map((c, i) => ({ id: i, color: colorScale(i) })))
+                .enter()
+                .append('g')
+                .attr('class', 'legend-item')
+                .attr('transform', (d, i) => `translate(0, ${i * legendItemHeight})`);
+            
+            legendItems.append('rect')
+                .attr('width', 10)
+                .attr('height', 10)
+                .attr('fill', d => d.color)
+                .attr('stroke', '#475569')
+                .attr('stroke-width', 1)
+                .attr('rx', 2);
+            
+            legendItems.append('text')
+                .attr('x', 14)
+                .attr('y', 8)
+                .attr('font-size', '9px')
+                .attr('font-weight', '500')
+                .attr('fill', '#475569')
+                .text(d => `C${d.id + 1}`);
+            
+            // Data points with smooth transitions
+            const points = svgMain.selectAll('.data-point')
+                .data(dataPoints.map((d, i) => ({ point: d, label: labels[i], index: i })), d => d.index);
+            
+            const pointsEnter = points.enter()
+                .append('circle')
+                .attr('class', 'data-point')
+                .attr('cx', d => xScale(d.point[0]))
+                .attr('cy', d => yScale(d.point[1]))
+                .attr('r', 0)
+                .attr('fill', d => colorScale(d.label))
+                .attr('opacity', 0)
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2);
+            
+            // Merge and set initial attributes
+            const pointsMerged = pointsEnter.merge(points)
+                .attr('cx', d => xScale(d.point[0]))
+                .attr('cy', d => yScale(d.point[1]))
+                .attr('r', 0)
+                .attr('fill', d => colorScale(d.label))
+                .attr('opacity', 0)
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2);
+            
+            // Add hover interactions BEFORE transition
+            pointsMerged
+                .on('mouseover', function(event) {
+                    const d = d3.select(this).datum();
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr('r', 16)  // Larger hover size
+                        .attr('opacity', 1)
+                        .attr('stroke-width', 3);
+                    showTooltip(event, `Point ${d.index}<br>Cluster: ${d.label + 1}<br>X: ${d.point[0].toFixed(2)}<br>Y: ${d.point[1].toFixed(2)}`);
+                })
+                .on('mouseout', function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr('r', 12)  // Back to normal size
+                        .attr('opacity', 0.9)
+                        .attr('stroke-width', 2);
+                    hideTooltip();
+                });
+            
+            // Now apply transition
+            pointsMerged
+                .transition()
+                .duration(600)
+                .ease(d3.easeCubicOut)
+                .attr('cx', d => xScale(d.point[0]))
+                .attr('cy', d => yScale(d.point[1]))
+                .attr('r', 12)  // Normal point size
+                .attr('opacity', 0.9)  // High opacity for better visibility
+                .attr('stroke-width', 2);
+            
+            points.exit()
+                .transition()
+                .duration(300)
+                .attr('r', 0)
+                .attr('opacity', 0)
+                .remove();
+            
+            // Current centroids with smooth animations
+            const centroidElements = svgMain.selectAll('.centroid')
+                .data(centroids.map((c, i) => ({ pos: c, id: i })), d => d.id);
+            
+            const centroidsEnter = centroidElements.enter()
+                .append('g')
+                .attr('class', 'centroid')
+                .attr('transform', d => `translate(${xScale(d.pos[0])},${yScale(d.pos[1])})`)
+                .attr('opacity', 0);
+            
+            centroidsEnter.each(function(d) {
+                const g = d3.select(this);
+                g.append('circle')
+                    .attr('r', 0)
+                    .attr('fill', colorScale(d.id))
+                    .attr('opacity', 0.2);
+                g.append('polygon')
+                    .attr('points', '-10,-10 10,-10 0,10')
+                    .attr('fill', colorScale(d.id))
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 2)
+                    .attr('transform', 'scale(0)');
+                g.append('text')
+                    .attr('y', 25)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-weight', '700')
+                    .attr('font-size', '12px')
+                    .attr('opacity', 0)
+                    .text(`C${d.id + 1}`);
+            });
+            
+            const centroidsMerged = centroidsEnter.merge(centroidElements);
+            
+            // Add hover interactions BEFORE transitions
+            centroidsMerged
+                .on('mouseover', function(event) {
+                    const d = d3.select(this).datum();
+                    d3.select(this).select('circle')
+                        .transition()
+                        .duration(200)
+                        .attr('r', 20)
+                        .attr('opacity', 0.3);
+                    showTooltip(event, `Centroid ${d.id + 1}<br>X: ${d.pos[0].toFixed(2)}<br>Y: ${d.pos[1].toFixed(2)}<br>Cluster Size: ${step.payload.cluster_sizes[d.id]}`);
+                })
+                .on('mouseout', function() {
+                    d3.select(this).select('circle')
+                        .transition()
+                        .duration(200)
+                        .attr('r', 15)
+                        .attr('opacity', 0.2);
+                    hideTooltip();
+                });
+            
+            // Now apply transitions
+            centroidsMerged
+                .transition()
+                .duration(800)
+                .ease(d3.easeElasticOut)
+                .attr('transform', d => `translate(${xScale(d.pos[0])},${yScale(d.pos[1])})`)
+                .attr('opacity', 1);
+            
+            centroidsMerged.select('circle')
+                .transition()
+                .duration(800)
+                .attr('r', 15);
+            
+            centroidsMerged.select('polygon')
+                .transition()
+                .duration(800)
+                .ease(d3.easeElasticOut)
+                .attr('transform', 'scale(1)');
+            
+            centroidsMerged.select('text')
+                .transition()
+                .delay(400)
+                .duration(400)
+                .attr('opacity', 1);
+            
+            centroidElements.exit()
+                .transition()
+                .duration(300)
+                .attr('opacity', 0)
+                .attr('transform', d => `translate(${xScale(d.pos[0])},${yScale(d.pos[1])}) scale(0)`)
+                .remove();
+            
+            // Show manually placed centroids ONLY if in placement mode AND no K-Means steps yet
+            // Once K-Means runs, the regular centroids from traceData.steps will animate properly
+            if (placementMode && manualCentroids.length > 0 && (!traceData || !traceData.steps || traceData.steps.length === 0)) {
+                // Remove existing manual centroids group
+                svgMain.select('.manual-centroid-group').remove();
+                
+                const manualGroup = svgMain.append('g').attr('class', 'manual-centroid-group');
+                const tempColorScale = colorScale || d3.scaleOrdinal(d3.schemeCategory10);
+                
+                manualCentroids.forEach((centroid, idx) => {
+                    const g = manualGroup.append('g')
+                        .attr('class', 'manual-centroid')
+                        .attr('transform', `translate(${xScale(centroid[0])},${yScale(centroid[1])})`)
+                        .style('cursor', 'pointer')
+                        .style('pointer-events', 'all');
+                    
+                    g.append('circle')
+                        .attr('r', 15)
+                        .attr('fill', tempColorScale(idx))
+                        .attr('opacity', 0.3);
+                    
+                    g.append('polygon')
+                        .attr('points', '-10,-10 10,-10 0,10')
+                        .attr('fill', tempColorScale(idx))
+                        .attr('stroke', 'black')
+                        .attr('stroke-width', 2);
+                    
+                    g.append('text')
+                        .attr('y', 25)
+                        .attr('text-anchor', 'middle')
+                        .attr('font-weight', '700')
+                        .attr('font-size', '12px')
+                        .text(`M${idx + 1}`);
+                    
+                    // Dragging
+                    g.call(d3.drag()
+                        .on('start', function(event) {
+                            d3.select(this).raise().style('opacity', 0.8);
+                        })
+                        .on('drag', function(event) {
+                            const [x, y] = d3.pointer(event, svgMain.node());
+                            const dataX = xScale.invert(x);
+                            const dataY = yScale.invert(y);
+                            manualCentroids[idx] = [dataX, dataY];
+                            d3.select(this).attr('transform', `translate(${x},${y})`);
+                        })
+                        .on('end', function(event) {
+                            d3.select(this).style('opacity', 1);
+                        }));
+                    
+                    // Double-click to remove
+                    g.on('dblclick', function(event) {
+                        event.stopPropagation();
+                        manualCentroids.splice(idx, 1);
+                        updatePlacementHint();
+                        updateMainPlot(step);
+                    });
+                });
+            } else {
+                // Remove manual centroids overlay if K-Means has run
+                if (svgMain && !svgMain.empty()) {
+                    svgMain.select('.manual-centroid-group').remove();
+                }
+            }
+            } catch (error) {
+                console.error('Error in updateMainPlot:', error);
+                const container = d3.select('#mainPlot');
+                container.html(`<div class="error">Error rendering plot: ${error.message}</div>`);
+            }
+        }
+
+        function update3DPlot(step) {
+            try {
+                const container = d3.select('#mainPlot');
+                const containerNode = container.node();
+                
+                // If in placement mode and no steps yet, use manual placement display
+                if (placementMode && (!step || !step.payload || !traceData.steps || traceData.steps.length === 0)) {
+                    update3DManualPlacement();
+                    return;
+                }
+                
+                if (!containerNode || !traceData || !traceData.meta || !step || !step.payload) {
+                    console.error('Missing data for 3D plot');
+                    return;
+                }
+                
+                const dataPoints = traceData.meta.data_points;
+                const centroids = step.payload.centroids.map(c => c.position);
+                const labels = step.payload.labels || [];
+                const nClusters = centroids.length;
+                
+                if (!colorScale) {
+                    colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+                        .domain(d3.range(nClusters));
+                }
+                
+                // Prepare data traces for each cluster
+                const traces = [];
+                
+                // Add data points grouped by cluster
+                for (let k = 0; k < nClusters; k++) {
+                    const clusterPoints = dataPoints.filter((d, i) => labels[i] === k);
+                    if (clusterPoints.length > 0) {
+                        traces.push({
+                            x: clusterPoints.map(d => d[0]),
+                            y: clusterPoints.map(d => d[1]),
+                            z: clusterPoints.map(d => d[2]),
+                            mode: 'markers',
+                            type: 'scatter3d',
+                            name: `Cluster ${k + 1}`,
+                            marker: {
+                                size: 5,
+                                color: d3.rgb(colorScale(k)).toString(),
+                                opacity: 0.7,
+                                line: {
+                                    color: 'white',
+                                    width: 0.5
+                                }
+                            },
+                            text: clusterPoints.map((d, i) => `Point ${i}<br>Cluster: ${k + 1}<br>X: ${d[0].toFixed(2)}<br>Y: ${d[1].toFixed(2)}<br>Z: ${d[2].toFixed(2)}`),
+                            hoverinfo: 'text'
+                        });
+                    }
+                }
+                
+                // Add centroids as larger markers
+                const centroidTrace = {
+                    x: centroids.map(c => c[0]),
+                    y: centroids.map(c => c[1]),
+                    z: centroids.map(c => c[2]),
+                    mode: 'markers+text',
+                    type: 'scatter3d',
+                    name: 'Centroids',
+                    marker: {
+                        size: 12,
+                        color: centroids.map((c, i) => d3.rgb(colorScale(i)).toString()),
+                        symbol: 'diamond',
+                        opacity: 0.9,
+                        line: {
+                            color: 'black',
+                            width: 2
+                        }
+                    },
+                    text: centroids.map((c, i) => `C${i + 1}`),
+                    textposition: 'top center',
+                    textfont: {
+                        size: 14,
+                        color: 'black',
+                        family: 'Arial Black'
+                    },
+                    hoverinfo: 'text',
+                    hovertemplate: centroids.map((c, i) => 
+                        `<b>Centroid ${i + 1}</b><br>X: ${c[0].toFixed(2)}<br>Y: ${c[1].toFixed(2)}<br>Z: ${c[2].toFixed(2)}<br>Cluster Size: ${step.payload.cluster_sizes ? step.payload.cluster_sizes[i] : 'N/A'}<extra></extra>`
+                    )
+                };
+                traces.push(centroidTrace);
+                
+                // Calculate layout dimensions
+                const containerWidth = containerNode.clientWidth;
+                const containerHeight = Math.min(700, window.innerHeight - 300);
+                
+                // Calculate axis ranges
+                const allX = [...dataPoints.map(d => d[0]), ...centroids.map(c => c[0])];
+                const allY = [...dataPoints.map(d => d[1]), ...centroids.map(c => c[1])];
+                const allZ = [...dataPoints.map(d => d[2]), ...centroids.map(c => c[2])];
+                
+                const xRange = [Math.min(...allX) * 1.1, Math.max(...allX) * 1.1];
+                const yRange = [Math.min(...allY) * 1.1, Math.max(...allY) * 1.1];
+                const zRange = [Math.min(...allZ) * 1.1, Math.max(...allZ) * 1.1];
+                
+                // Layout configuration
+                const layout = {
+                    title: {
+                        text: `K-Means 3D Visualization - Iteration ${step.payload.iteration || currentIteration}`,
+                        font: { size: 18, color: 'white' }
+                    },
+                    scene: {
+                        xaxis: {
+                            title: 'X',
+                            range: xRange,
+                            gridcolor: 'rgb(200, 200, 200)',
+                            showbackground: true,
+                            backgroundcolor: 'rgb(230, 230, 230)'
+                        },
+                        yaxis: {
+                            title: 'Y',
+                            range: yRange,
+                            gridcolor: 'rgb(200, 200, 200)',
+                            showbackground: true,
+                            backgroundcolor: 'rgb(230, 230, 230)'
+                        },
+                        zaxis: {
+                            title: 'Z',
+                            range: zRange,
+                            gridcolor: 'rgb(200, 200, 200)',
+                            showbackground: true,
+                            backgroundcolor: 'rgb(230, 230, 230)'
+                        },
+                        aspectmode: 'cube',
+                        camera: {
+                            eye: { x: 1.5, y: 1.5, z: 1.5 },
+                            center: { x: 0, y: 0, z: 0 },
+                            up: { x: 0, y: 0, z: 1 }
+                        }
+                    },
+                    width: containerWidth,
+                    height: containerHeight,
+                    margin: { l: 0, r: 0, t: 60, b: 0 },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    legend: {
+                        x: 0.02,
+                        y: 0.98,
+                        bgcolor: 'rgba(255, 255, 255, 0.8)',
+                        bordercolor: 'rgba(0, 0, 0, 0.5)',
+                        borderwidth: 1
+                    },
+                    hovermode: 'closest'
+                };
+                
+                const config = {
+                    displayModeBar: true,
+                    displaylogo: false,
+                    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                    responsive: true,
+                    toImageButtonOptions: {
+                        format: 'png',
+                        filename: `kmeans_3d_iteration_${currentIteration}`,
+                        height: containerHeight,
+                        width: containerWidth,
+                        scale: 1
+                    }
+                };
+                
+                // Clear container and render plot
+                container.html('');
+                Plotly.newPlot(containerNode, traces, layout, config);
+                
+                // Store Plotly div for future updates
+                window.plotly3D = containerNode;
+                
+            } catch (error) {
+                console.error('Error in update3DPlot:', error);
+                const container = d3.select('#mainPlot');
+                container.html(`<div class="error">Error rendering 3D plot: ${error.message}</div>`);
+            }
+        }
+
+        function updateWCSSPlot() {
+            if (!traceData || !traceData.inertia_history) return;
+            
+            const container = d3.select('#wcssPlot');
+            container.selectAll('*').remove();
+            
+            const w = container.node().clientWidth - margin.left - margin.right;
+            const h = 400 - margin.top - margin.bottom;
+            
+            const xScaleWCSS = d3.scaleLinear()
+                .domain([0, traceData.inertia_history.length - 1])
+                .range([0, w]);
+            
+            const yScaleWCSS = d3.scaleLog()
+                .domain(d3.extent(traceData.inertia_history))
+                .range([h, 0]);
+            
+            svgWCSS = container.append('svg')
+                .attr('width', w + margin.left + margin.right)
+                .attr('height', h + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Line generator
+            const line = d3.line()
+                .x((d, i) => xScaleWCSS(i))
+                .y(d => yScaleWCSS(d))
+                .curve(d3.curveMonotoneX);
+            
+            // Add line with animation
+            const path = svgWCSS.append('path')
+                .datum(traceData.inertia_history)
+                .attr('d', line)
+                .attr('fill', 'none')
+                .attr('stroke', '#6366f1')
+                .attr('stroke-width', 3)
+                .attr('stroke-dasharray', function() {
+                    const totalLength = this.getTotalLength();
+                    return totalLength + ' ' + totalLength;
+                })
+                .attr('stroke-dashoffset', function() {
+                    return this.getTotalLength();
+                });
+            
+            path.transition()
+                .duration(1500)
+                .ease(d3.easeCubicInOut)
+                .attr('stroke-dashoffset', 0);
+            
+            // Add dots with animation
+            const dots = svgWCSS.selectAll('.wcss-dot')
+                .data(traceData.inertia_history)
+                .enter()
+                .append('circle')
+                .attr('class', 'wcss-dot')
+                .attr('cx', (d, i) => xScaleWCSS(i))
+                .attr('cy', d => yScaleWCSS(d))
+                .attr('r', 0)
+                .attr('fill', '#6366f1')
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2);
+            
+            // Add event handlers before transition
+            dots
+                .on('mouseover', function(event) {
+                    const d = d3.select(this).datum();
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr('r', 8);
+                    showTooltip(event, `Iteration: ${traceData.inertia_history.indexOf(d)}<br>WCSS: ${d.toFixed(2)}`);
+                })
+                .on('mouseout', function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr('r', 5);
+                    hideTooltip();
+                });
+            
+            // Now apply transition
+            dots.transition()
+                .delay((d, i) => i * 50)
+                .duration(300)
+                .ease(d3.easeElasticOut)
+                .attr('r', 5);
+            
+            // Highlight current iteration with animation
+            if (currentIteration < traceData.inertia_history.length) {
+                const highlight = svgWCSS.append('circle')
+                    .attr('cx', xScaleWCSS(currentIteration))
+                    .attr('cy', yScaleWCSS(traceData.inertia_history[currentIteration]))
+                    .attr('r', 0)
+                    .attr('fill', '#f59e0b')
+                    .attr('stroke', 'white')
+                    .attr('stroke-width', 3);
+                
+                highlight.transition()
+                    .duration(500)
+                    .ease(d3.easeElasticOut)
+                    .attr('r', 10);
+            }
+            
+            // Axes
+            svgWCSS.append('g')
+                .attr('transform', `translate(0,${h})`)
+                .call(d3.axisBottom(xScaleWCSS));
+            
+            svgWCSS.append('g')
+                .call(d3.axisLeft(yScaleWCSS));
+            
+            svgWCSS.append('text')
+                .attr('x', w / 2)
+                .attr('y', h + 40)
+                .attr('fill', 'currentColor')
+                .style('text-anchor', 'middle')
+                .style('font-weight', '600')
+                .text('Iteration');
+            
+            svgWCSS.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -40)
+                .attr('x', -h / 2)
+                .attr('fill', 'currentColor')
+                .style('text-anchor', 'middle')
+                .style('font-weight', '600')
+                .text('WCSS (Log Scale)');
+        }
+
+        function showTooltip(event, html) {
+            const tooltip = d3.select('#tooltip');
+            tooltip.html(html)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px')
+                .classed('visible', true);
+        }
+
+        function hideTooltip() {
+            d3.select('#tooltip').classed('visible', false);
+        }
+
+        // Event listeners for visualization options
+        ['showDistances', 'showVoronoi', 'showTrajectories', 'showLabels'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                if (traceData) updateVisualizations();
+            });
+        });
+    </script>
+</body>
+</html>

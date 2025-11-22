@@ -1,10 +1,10 @@
-import TestAPI from "./TestAPI";
+import KMeans from './scripts/KMeans';
+import './App.css';
 
 function App() {
   return (
-    <div>
-      <h1>API Test</h1>
-      <TestAPI />
+    <div className="App">
+      <KMeans />
     </div>
   );
 }

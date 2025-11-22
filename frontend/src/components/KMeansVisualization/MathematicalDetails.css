@@ -1,0 +1,72 @@
+.mathematical-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.info-panel {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-color);
+}
+
+.info-panel h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.step-explanation {
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.formula-box {
+  background: var(--bg-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.formula-box strong {
+  color: var(--primary);
+  font-weight: 600;
+  display: block;
+  margin-bottom: var(--spacing-xs);
+}
+
+.algorithm-steps {
+  padding-left: 20px;
+  line-height: 2;
+  color: var(--text-secondary);
+}
+
+.algorithm-steps li {
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.algorithm-steps li.highlighted {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.algorithm-steps li strong {
+  color: var(--text-primary);
+}
+

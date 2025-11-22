@@ -1,0 +1,24 @@
+/* K-Means Component Styles */
+
+.kmeans-container {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1400px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
