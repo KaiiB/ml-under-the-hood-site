@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from .common import DatasetParams
-from typing import List
+from typing import List, Optional
 
 
 class PCADatasetParams(BaseModel):
@@ -17,10 +17,6 @@ class PCADatasetParams(BaseModel):
     ]
 
 
-class PCAAlgoParams(BaseModel):
-    num_components: int = 2
-
 
 class PCARequest(BaseModel):
     dataset: PCADatasetParams
-    algo: PCAAlgoParams

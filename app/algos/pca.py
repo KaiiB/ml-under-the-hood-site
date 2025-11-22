@@ -50,21 +50,26 @@ def generateGaussian(
         covs = generateCovariances(num_sets, dim)
     else:
         covs = np.array(covs)
+        assert covs.shape[1:] == (dim, dim), "Cov matrix must be dim x dim"
         for i in range(num_sets):
+            assert isSymmetric(covs[i]), "Covariance matrix is not symmetric."
+            '''
             if not isSymmetric(covs[i]):
                 print("Covariance matrix is not symmetric.")
+            '''
 
     if means is None:
         means = np.random.randn(num_sets, dim)
     else:
         means = np.array(means)
+        assert means.shape[1] == dim, "Mean must match dim"
 
     all_data = []
     for i in range(num_sets):
         data = np.random.multivariate_normal(means[i], covs[i], size=num_points)
         all_data.append(data)
 
-    return np.vstack(all_data)  # Shape: (num_sets*num_points, dim)
+    return np.array(all_data)  # Shape: (num_sets*num_points, dim)
 
 # Data Extraction
 def loadData(path, dtype=None):
@@ -80,7 +85,7 @@ def loadData(path, dtype=None):
         return np.load(path)
 
 def standardize(data):
-    return (data - data.mean(axis=0)) / data.std(ddof=0, axis=0)
+    return data / data.std(ddof=0, axis=0)
 
 def projection(u, v):
     v = v / np.linalg.norm(v)
@@ -109,31 +114,42 @@ def pcaEllipse2D(eigvals, data, z=2.0):
     return center, width, height
 
 class PCA:
-    def __init__(self, data=None, num_components=2):
-        self.data = data
-        self.num_components = num_components
+    def __init__(self, data=None):
+        # Standardize per entire dataset
+        flat_data = np.vstack(data)
+        flat_data = standardize(flat_data)
 
-        eigvals, eigvecs = computePCA(self.data)
-        self.eigvals = eigvals
-        self.eigvecs = eigvecs[:, :num_components]
+        self.data = flat_data.reshape(*data.shape)
+        self.num_sets, self.num_points, self.dim = self.data.shape
+        self.num_components = self.dim - 1
+
+        eigvals, eigvecs = computePCA(flat_data)
+        self.eigvals = eigvals[:self.num_components]
+        self.eigvecs = eigvecs[:, :self.num_components]
+
         eigvals_vis = eigvals[:2]
         self.center, self.width, self.height = pcaEllipse2D(
-            eigvals_vis, self.data
+            eigvals_vis, flat_data
         )
 
     def transform(self, data):
-        return (data - self.center) @ self.eigvecs
-
-def run_pca_trace(dataset_params: dict, algo_params: dict):
+        flat = np.vstack(data)
+        proj = flat @ self.eigvecs
+        return proj.reshape(self.num_sets, self.num_points, self.num_components)
+    
+def run_pca_trace(dataset_params: dict):
     data = generateGaussian(**dataset_params)
-    pca = PCA(data, algo_params["num_components"])
+    pca = PCA(data)
 
     trace = {
         "schema_version": 1,
         "algo": "pca_gaussian",
+        "data": pca.data.tolist(),
+        "projected": pca.transform(pca.data).tolist(),
         "meta": {
-            "n": int(pca.data.shape[0]),
-            "d": int(pca.data.shape[1]),
+            "num_sets": pca.num_sets,
+            "num_points": pca.num_points,
+            "dim": pca.dim,
             "ellipse": {
                 "ellipse_center": pca.center.tolist(),
                 "ellipse_width": float(pca.width),
@@ -142,16 +158,14 @@ def run_pca_trace(dataset_params: dict, algo_params: dict):
             "eigens": {
                 "eigvals": pca.eigvals.tolist(),
                 "eigvecs": pca.eigvecs.tolist()
-            },
-            "data": pca.data.tolist()
+            }
         },
         "params": {
-            "num_components": algo_params["num_components"],
+            "num_components": pca.num_components,
             "seed": dataset_params.get("seed", None),
         },
         "params_full": {
-            "dataset": dataset_params,
-            "algo": algo_params,
+            "dataset": dataset_params
         }
     }
 

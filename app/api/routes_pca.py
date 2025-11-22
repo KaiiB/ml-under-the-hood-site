@@ -7,7 +7,7 @@ router = APIRouter()
 
 #@router.get("/")
 @router.post("/pca", summary="Get PCA Trace")
-def read_pca_trace(req: PCARequest):
+def get_pca_trace(req: PCARequest):
     """
     Accepts dataset + algo params, calls PCA and returns a StepTrace JSON
     for the PCA algorithm on a Gaussian-distributed dataset.
@@ -16,9 +16,8 @@ def read_pca_trace(req: PCARequest):
     """
     try:
         dataset_params = req.dataset.model_dump()
-        algo_params = req.algo.model_dump()
 
-        trace = run_pca_trace(dataset_params, algo_params)
+        trace = run_pca_trace(dataset_params)
 
         # run_em_trace must already return a JSON-serializable dict:
         # {
