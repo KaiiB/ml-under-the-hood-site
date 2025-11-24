@@ -221,8 +221,18 @@ const PCAVisualizer: React.FC = () => {
             mode: "markers",
             type: "scatter",
             name: "Data (standardized)",
-            marker: { size: 6, opacity: 0.35, color: "rgba(255,165,0,1)" },
+            marker: { size: 6, opacity: 1, color: "rgba(255,165,0,1)" },
             hoverinfo: "x+y",
+          },
+
+          // User guess for Principal Component
+          {
+            x: guessAxisX,
+            y: guessAxisY,
+            mode: "lines",
+            type: "scatter",
+            name: "Guess Axis",
+            line: { width: 2.5, color: "rgba(0,0,0,1)" },
           },
 
           // projection line along axis (connected) to show variance spread
@@ -231,8 +241,8 @@ const PCAVisualizer: React.FC = () => {
             y: projectionLine.ys,
             mode: "lines",
             type: "scatter",
-            name: "Projection (axis line)",
-            line: { width: 2.5, color: "rgba(0,0,0,1)" },
+            name: "Range of Projection",
+            line: { width: 3, color: "rgba(238,130,238,1)" },
           },
 
           // projected points (on axis) - semi-transparent but visible
@@ -242,21 +252,8 @@ const PCAVisualizer: React.FC = () => {
             mode: "markers",
             type: "scatter",
             name: "Projected points",
-            marker: { size: 8, opacity: 0.55, color: "rgba(0,128,0,0.6)" },
+            marker: { size: 8, opacity: 0.3, color: "rgba(0,128,0,1)" },
             hoverinfo: "none",
-          },
-
-          // residual lines for selected subset (red)
-          // will be expanded into multiple traces below (spread)
-          // (Plotly accepts array of traces; concatenated)
-          // guess axis (bold solid)
-          {
-            x: guessAxisX,
-            y: guessAxisY,
-            mode: "lines",
-            type: "scatter",
-            name: "Guess Axis",
-            line: { width: 2.5, color: "rgba(0,0,0,0.5)" },
           },
 
           // ellipse (rotating)
@@ -265,8 +262,8 @@ const PCAVisualizer: React.FC = () => {
             y: ellipsePoints.ys,
             mode: "lines",
             type: "scatter",
-            name: "Ellipse (rotating)",
-            line: { width: 2, color: "rgba(0,0,0,1)" },
+            name: "Ellipse",
+            line: { width: 2, color: "rgba(128,128,128,1)" },
           },
 
           // true PCA axis faint short line (for visual fallback, same color as annotations)
@@ -275,7 +272,7 @@ const PCAVisualizer: React.FC = () => {
             y: trueAxisY,
             mode: "lines",
             type: "scatter",
-            name: "True PCA axis",
+            name: "True Principal Component",
             line: { width: 2, dash: "solid", color: "rgba(0,0,255,0.4)" },
           },
           // then spread residual lines
@@ -302,7 +299,7 @@ const PCAVisualizer: React.FC = () => {
           margin: { l: 60, r: 20, t: 60, b: 60 },
           annotations: pcaArrowAnnotations,
         }}
-        config={{ responsive: true }}
+        config={{ responsive: true,  displayModeBar: false  }}
       />
       <div style={{ fontSize: 13, marginTop: 8 }}>
         <strong>Notes:</strong>{" "}

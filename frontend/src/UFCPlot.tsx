@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
-import "./Components.css";
+import "./components.css";
 
 interface UFCTrace {
   name: string[];
@@ -8,7 +8,12 @@ interface UFCTrace {
   projected: number[][];
 }
 
-const UFCPlot: React.FC = () => {
+// Controls whether selected fighters always show labels
+interface UFCPlotProps {
+  showSelectedLabels?: boolean; 
+}
+
+const UFCPlot: React.FC<UFCPlotProps> = ({ showSelectedLabels = false }) => {
   const [traceData, setTraceData] = useState<UFCTrace | null>(null);
 
   useEffect(() => {
@@ -24,9 +29,32 @@ const UFCPlot: React.FC = () => {
 
   const x = traceData.projected.map((p) => p[0]);
   const y = traceData.projected.map((p) => p[1]);
-  const text = traceData.name.map(
-    (n, i) => `${n} (Wins: ${traceData.wins[i]})`
-  );
+
+  // Fighters whose names you always want to display
+  const labelSet = new Set([
+    "Jon Jones",
+    "Demeterious Johnson",
+    "Georges St-Pierre",
+    "Anderson Silva",
+    "Khabib Nurmagomedov",
+    "Islam Makhachev",
+    "Valentina Shevchenko",
+    "Amanda Nunes",
+    "Kamaru Usman",
+    "Alexander Volkanovski"
+  ]);
+
+  // One fighter to highlight heavily
+  const highlight = "Zabit Magomedsharipov";
+
+  // Determine each label based on mode
+  const text = showSelectedLabels
+    ? traceData.name.map((fighter) =>
+        labelSet.has(fighter) ? fighter : ""
+      )
+    : traceData.name.map(
+        (n, i) => `${n} (Wins: ${traceData.wins[i]})`
+      );
 
   return (
     <div className="visualizer-container">
@@ -38,11 +66,36 @@ const UFCPlot: React.FC = () => {
               x,
               y,
               text,
-              mode: "markers",
+
+              // Switch between hover-only or always-show labels
+              mode: showSelectedLabels ? "markers+text" : "markers",
               type: "scatter",
+
+              // Offset Zabit’s label
+              textposition: traceData.name.map((fighter) =>
+                fighter === highlight ? "top left" : "top center"
+              ),
+
+              // Make Zabit’s label bold, red, and larger
+              textfont: traceData.name.map((fighter) =>
+                fighter === highlight
+                  ? { color: "red", size: 16, family: "Arial Black" }
+                  : { color: "black", size: 12 }
+              ),
+
+              // Make Zabit’s marker bigger with a red outline
               marker: {
-                size: 10,
-                color: traceData.wins, 
+                size: traceData.name.map((fighter) =>
+                  fighter === highlight ? 18 : 10
+                ),
+                line: {
+                  width: traceData.name.map((fighter) =>
+                    fighter === highlight ? 3 : 0
+                  ),
+                  color: "red",
+                },
+
+                color: traceData.wins,
                 colorscale: "Viridis",
                 showscale: true,
                 colorbar: {
@@ -57,12 +110,14 @@ const UFCPlot: React.FC = () => {
                   },
                   thickness: 20,
                   len: 0.6,
-                  tickfont: { size: 12 }
+                  tickfont: { size: 12 },
                 },
               },
+
               hoverinfo: "text",
             },
           ]}
+
           layout={{
             xaxis: {
               title: { text: "Principal Component 1", font: { size: 14 } },
@@ -73,7 +128,32 @@ const UFCPlot: React.FC = () => {
             height: 600,
             width: 1100,
             margin: { t: 60, b: 60, l: 80, r: 40 },
+
+            // Arrow annotation pointing to Zabit
+            annotations: traceData.name
+              .map((fighter, i) =>
+                fighter === highlight
+                  ? {
+                      x: x[i],
+                      y: y[i],
+                      xanchor: "left",
+                      yanchor: "bottom",
+                      text: fighter,
+                      showarrow: true,
+                      arrowhead: 2,
+                      ax: 40,   // horizontal offset
+                      ay: -40,  // vertical offset
+                      font: {
+                        color: "red",
+                        size: 16,
+                        family: "Arial Black",
+                      },
+                    }
+                  : null
+              )
+              .filter(Boolean),
           }}
+
           style={{ width: "100%", height: "100%" }}
           config={{ displayModeBar: false }}
         />

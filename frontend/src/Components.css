@@ -1,8 +1,20 @@
 /* Component Styles, Adapated from Ishaan's K-Means Visualization */
 
+p {
+  margin-bottom: 1em; /* or 16px, etc. */
+}
+
+.main-text blockquote {
+  border-left: 4px solid #ccc;
+  align-items: center;
+  padding-left: 24px;
+  margin: 16px 0;
+  font-style: italic;
+  color: #000000;
+}
+
 /* PCA Layout */
 .pca-container {
-  transform: translateX(100px);
   width: 1600px;
   gap: 32px;
   max-width: 100%;
@@ -97,11 +109,11 @@
 }
 
 .visualizer-card {
-  transform: translateX(140px);
   width: 1200px; /* fixed width removes shifting on slider change */
   max-width: 90vw;
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: var(--spacing-sm);
   padding: 24px;
   background: var(--bg-primary);
   border-radius: var(--radius-2xl);
@@ -516,6 +528,72 @@
   text-align: center;
   color: var(--text-primary);
   font-family: inherit; /* ensures same font as other text */
+}
+
+.main-text {
+  font-size: 1.25rem;
+  font-weight: 350;
+  line-height: 1.2;
+  letter-spacing: normal;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  padding: var(--spacing-lg);
+  font-family: inherit; /* ensures same font as other text */
+}
+
+.visualizer-content img {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  display: block;
+  margin: 12px auto;
+}
+
+.visualizer-content img.original-image {
+  width: auto;
+  max-width: none;
+}
+
+.image-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Style each image */
+.image-row img {
+  width: 30%;                  /* each image takes ~30% of the container */
+  max-width: 240px;            /* prevents giant images */
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Each image+caption block */
+.image-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 30%;
+  max-width: 240px;
+}
+
+/* Force images to a uniform size */
+.image-item img {
+  width: 100%;
+  height: 180px;           /* <-- makes all images equal height */
+  object-fit: cover;       /* <-- crops to fill the box nicely */
+  border-radius: 12px;
+  display: block;
+}
+
+/* Captions */
+.image-item figcaption {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
 }
 
 .iteration-controls {
