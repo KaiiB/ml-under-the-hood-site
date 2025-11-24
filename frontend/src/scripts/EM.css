@@ -1,0 +1,51 @@
+.em-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.em-layout {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.em-controls {
+  flex: 0 0 320px;
+}
+
+.em-plot {
+  flex: 1 1 auto;
+  min-height: 500px;
+}
+
+.em-plot-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: stretch;
+  /* no fixed height here – let the children define it */
+}
+
+/* left: 3D plot */
+.em-plot-3d {
+  flex: 3 1 0;   
+  min-width: 0; 
+}
+
+/* right: log-likelihood chart */
+.em-loglikelihood-chart {
+  flex: 2 1 0;   
+  min-width: 0;
+  height: 600px;
+  width: 600px
+}
+
+.em-iter-control {
+  margin-bottom: 1rem;
+}
+
+/* fixed-length iteration bar */
+.em-iter-slider {
+  width: 320px;        
+  max-width: 320px;
+}
