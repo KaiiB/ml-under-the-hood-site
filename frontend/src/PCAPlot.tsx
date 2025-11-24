@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Plot from "react-plotly.js";
-
+import "./globals.css";
+import "./Components.css";
 
 type PCAPlotProps = {
   data: number[][][];
@@ -20,145 +21,119 @@ export default function PCAPlot({
   center,
 }: PCAPlotProps) {
   const [showProjected, setShowProjected] = useState(false);
-  
 
-  {/*
-  console.log("eigvecs:", eigvecs);
-  console.log("eigvals:", eigvals);
-  console.log("center:", center);
-  console.log("one point:", data[0][0]);
-  */}
-
-  // Safety guards before plotting
-  if (!data || !projected) {
+  if (!data || !projected || !center || !eigvecs) {
     return <div>No PCA data available</div>;
   }
 
+  const is3DOriginal = dim === 3;
+  const is3D = is3DOriginal && !showProjected; // Projection always 2D/1D
+
   const source = showProjected ? projected : data;
 
-  const numSets = source.length;
-  const numDims = source[0]?.[0]?.length ?? 0;
+  // 🏷 Axis labels for student understanding
+  const label = (i: number) => {
+    if (showProjected) return `PC${i + 1}`;
 
-  const traces: any[] = [];
-  const colors = ["red", "blue", "green", "purple", "orange"];
-
-  for (let si = 0; si < numSets; si++) {
-    const xs = source[si].map((p) => p[0] ?? 0);
-    const ys = source[si].map((p) => (numDims > 1 ? p[1] : 0));
-    const zs = source[si].map((p) => (numDims > 2 ? p[2] : 0));
-
-    const is3D =
-      (!showProjected && dim === 3) ||
-      (showProjected && numDims === 3);
-
-    traces.push({
-      x: xs,
-      y: ys,
-      z: is3D ? zs : undefined,
-      type: is3D ? "scatter3d" : "scatter",
-      mode: "markers",
-      marker: {
-        size: 6,
-        color: colors[si % colors.length],
-        opacity: 0.85,
-      },
-      name: `Set ${si + 1}`,
-    });
-  }
-
-  // ----- Add PCA Vector Traces (ONLY on Original View + eigvecs valid) -----
-  if (!showProjected && eigvecs && eigvals && center) {
-    const scaleFactor = 2.0; // 2 std devs visual scaling
-
-    for (let i = 0; i < eigvals.length; i++) {
-      const length = scaleFactor * Math.sqrt(eigvals[i]);
-      const vector = eigvecs.map((row) => row[i]);
-
-      const start = center;
-      const end = start.map((c, idx) => c + vector[idx] * length);
-      const negative_end = start.map((c, idx) => c - vector[idx] * length);
-
-      if (dim === 3) {
-        traces.push({
-          x: [negative_end[0], end[0]],
-          y: [negative_end[1], end[1]],
-          z: [negative_end[2], end[2]],
-          type: "scatter3d",
-          mode: "lines",
-          line: {
-            width: 6,
-            color: "black"
-          },
-          name: `Principal Component ${i + 1}`,
-        });
-      } else {
-        traces.push({
-          x: [negative_end[0], end[0]],
-          y: [negative_end[1], end[1]],
-          type: "scatter",
-          mode: "lines",
-          line: {
-            width: 4,
-            color: "black"
-          },
-          name: `Principal Component ${i + 1}`,
-        });
-      }
-    }
-  }
-
-  // ----- Labeling layout -----
-  const layout: any = {
-    autosize: true,
-    margin: { t: 60 },
-    showlegend: true,
-    title: showProjected
-      ? "PCA Projection (Dimensionality Reduced)"
-      : "Original Data (Before PCA)",
+    // Original data axes
+    if (dim === 3) return ["x", "y", "z"][i];
+    if (dim === 2) return ["x", "y"][i];
+    return "x"; // dim == 1 case
   };
 
-  delete layout.scene; // if 2D
-  delete layout.xaxis; // if 3D
-  delete layout.yaxis; // if 3D
+  const traces = useMemo(() => {
+    const colors = ["red", "blue", "green", "purple", "orange"];
+    const ts: any[] = [];
 
-  const is3D =
-    (!showProjected && dim === 3) || (showProjected && numDims === 3);
+    source.forEach((set, si) => {
+      ts.push({
+        x: set.map((p) => p[0]),
+        y: set.map((p) => p[1] ?? 0),
+        ...(is3D && { z: set.map((p) => p[2] ?? 0) }),
+        type: is3D ? "scatter3d" : "scatter",
+        mode: "markers",
+        marker: {
+          size: 6,
+          color: colors[si % colors.length],
+          opacity: 0.85,
+        },
+        name: `Set ${si + 1}`,
+      });
+    });
 
-  if (is3D) {
-    layout.scene = {
-      xaxis: { title: showProjected ? "PCA1" : "X" },
-      yaxis: { title: showProjected ? "PCA2" : "Y" },
-      zaxis: { title: showProjected ? "PCA3" : "Z" },
+    if (!showProjected) {
+      eigvals.forEach((val, i) => {
+        const length = Math.sqrt(val) * 3;
+        const vec = eigvecs.map((row) => row[i]);
+
+        const pos = center.map((c, j) => c + vec[j] * length);
+        const neg = center.map((c, j) => c - vec[j] * length);
+
+        ts.push({
+          x: [neg[0], pos[0]],
+          y: [neg[1], pos[1]],
+          ...(is3D && { z: [neg[2], pos[2]] }),
+          type: is3D ? "scatter3d" : "scatter",
+          mode: "lines",
+          line: { width: 2, color: "black" },
+          name: `PC ${i + 1}`,
+        });
+      });
+    }
+
+    return ts;
+  }, [source, eigvecs, eigvals, center, showProjected, is3D]);
+
+  const layout = useMemo(() => {
+    const title = showProjected
+      ? "PCA Projection"
+      : "Original Data View";
+
+    const commonLayout = {
+      autosize: true,
+      title: { text: title, font: { size: 22 } },
+      margin: { l: 80, r: 20, b: 80, t: 80 },
+      template: "plotly_white",
     };
-  } else {
-    layout.xaxis = { title: showProjected ? "PCA1" : "X" };
-    layout.yaxis = {
-      title:
-        showProjected && numDims === 1
-          ? "" // hide in 1D projection view
-          : showProjected
-          ? "PCA2"
-          : "Y",
-    };
-  }
 
-  // ============================== RENDER ==============================
+    if (is3D) {
+      return {
+        ...commonLayout,
+        scene: {
+          xaxis: { title: { text: label(0), font: { size: 18 } } },
+          yaxis: { title: { text: label(1), font: { size: 18 } } },
+          zaxis: { title: { text: label(2), font: { size: 18 } } },
+        },
+      };
+    }
+
+    return {
+      ...commonLayout,
+      xaxis: { title: { text: label(0), font: { size: 18 } } },
+      yaxis:
+        (dim === 1 || showProjected && projected[0][0].length === 1)
+          ? { visible: false }
+          : { title: { text: label(1), font: { size: 18 } } },
+    };
+  }, [is3D, showProjected, dim, projected]);
+
   return (
-    <div style={{ width: "100%", height: "550px" }}>
+    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <button
-        onClick={() => setShowProjected((prev) => !prev)}
-        style={{ marginBottom: "10px" }}
+        onClick={() => setShowProjected((p) => !p)}
+        style={{ marginBottom: "10px", width: "200px" }}
       >
         {showProjected ? "Show Original Data" : "Show PCA Projection"}
       </button>
 
-      <Plot
-        data={traces}
-        layout={layout}
-        style={{ width: "100%", height: "500px" }}
-        config={{ responsive: true }}
-      />
+      <div style={{ width: "100%", height: "600px" }}>
+        <Plot
+          data={traces}
+          layout={layout}
+          config={{ responsive: true }}
+          style={{ width: "100%", height: "100%" }}
+        />
+      </div>
     </div>
   );
-
 }

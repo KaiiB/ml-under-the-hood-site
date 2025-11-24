@@ -85,7 +85,7 @@ def loadData(path, dtype=None):
         return np.load(path)
 
 def standardize(data):
-    return data / data.std(ddof=0, axis=0)
+    return (data - data.mean()) / data.std(ddof=0, axis=0)
 
 def projection(u, v):
     v = v / np.linalg.norm(v)
