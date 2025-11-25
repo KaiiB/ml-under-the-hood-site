@@ -160,6 +160,7 @@ def run_em_trace(dataset_params: dict, algo_params: dict) -> dict:
             "n": int(X.shape[0]),
             "d": int(X.shape[1]),
             "data": data_meta,
+            "raw_data": X.tolist()
         },
         "params": {
             "C": algo_params["C"],

@@ -1,0 +1,147 @@
+.em-page {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+}
+
+/* Big header card – copy of .header from the K-Means page */
+.em-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+
+.em-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.em-header p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  letter-spacing: -0.01em;
+}
+
+/* Two-column main layout – same as .main-grid */
+.em-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+@media (max-width: 1400px) {
+  .em-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left sidebar card – based on .sidebar */
+.em-controls {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-xl);
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  position: sticky;
+  top: var(--spacing-xl);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Right visualization card – based on .visualization-area */
+.em-plot {
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-xl);
+  min-height: 800px;
+  border: 1px solid var(--border-color);
+}
+
+/* Controls inside the sidebar */
+.em-control-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.em-control-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.em-control-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.em-control-group label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.em-control-group input[type="range"] {
+  width: 100%;
+}
+
+/* Run button section */
+.em-actions {
+  margin-top: var(--spacing-md);
+}
+
+.em-run-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Iteration slider + plots */
+.em-iter-control {
+  margin-bottom: var(--spacing-lg);
+}
+
+.em-iter-slider {
+  width: 320px;   /* fixed, doesn’t stretch with plots */
+  max-width: 320px;
+  display: block;
+  margin-top: var(--spacing-sm);
+}
+
+.em-plot-row {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: stretch;
+}
+
+.em-plot-3d {
+  flex: 3 1 0;
+  min-width: 0;
+}
+
+.em-loglikelihood-chart {
+  flex: 2 1 0;
+  min-width: 0;
+  height: 500px;
+}
