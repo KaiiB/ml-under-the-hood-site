@@ -3,6 +3,8 @@ import * as d3 from "d3";
 import { useEffect, useState, useRef, useMemo } from "react";
 import Plot from "react-plotly.js";
 import "./EM.css";
+import "../styles/components.css";
+import "../styles/globals.css";
 
 // Types fo EM elliposoid step payload
 type EMStepPayload = {
