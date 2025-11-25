@@ -1,5 +1,6 @@
 // Main K-Means Visualization Component
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { kmeansAPI } from '../services/api';
 import type { KMeansTrace } from '../services/api';
 import type { DatasetConfig, AlgorithmConfig, VisualizationConfig } from '../types/kmeans';
@@ -365,6 +366,7 @@ const KMeans: React.FC = () => {
   return (
     <div className="kmeans-container">
       <div className="header">
+        <Link to="/" className="back-link">← Back to Home</Link>
         <h1>K-Means Clustering</h1>
         <p>Interactive Step-by-Step Visualization & Learning Platform</p>
       </div>
