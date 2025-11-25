@@ -69,11 +69,19 @@
   margin-bottom: var(--spacing-xl);
   width: 100%;
   box-sizing: border-box;
+  align-items: start;
 }
 
-@media (max-width: 1400px) {
+/* Only stack vertically on very small screens (mobile) */
+@media (max-width: 768px) {
   .main-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    position: relative;
+    max-height: none;
+    top: 0;
   }
 }
 
@@ -91,7 +99,10 @@
   backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 340px;
+  min-width: 340px;
+  max-width: 340px;
+  flex-shrink: 0;
   box-sizing: border-box;
 }
 
@@ -318,6 +329,8 @@
   min-height: 800px;
   border: 1px solid var(--border-color);
   width: 100%;
+  min-width: 0;
+  flex: 1;
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: visible;

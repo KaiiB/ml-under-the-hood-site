@@ -6,19 +6,7 @@
   padding: var(--spacing-xl);
   width: 100%;
   box-sizing: border-box;
+  min-height: 100vh;
 }
 
-.main-grid {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-@media (max-width: 1400px) {
-  .main-grid {
-    grid-template-columns: 1fr;
-  }
-}
+/* Main grid layout is defined in components.css */
