@@ -391,174 +391,235 @@ export default function EM() {
     
 
     return (
-        <section className="em-page">
-            {/* big header like K-Means */}
-            <div className="em-header">
-            <h1>EM for Gaussian Mixtures</h1>
-            <p>Interactive step-by-step visualization of the EM algorithm.</p>
+  <section className="container em-page">
+    {/* Big header like K-Means */}
+    <header className="header">
+      <h1>EM for Gaussian Mixtures</h1>
+      <p>Interactive step-by-step visualization of the EM algorithm.</p>
+    </header>
+
+    <div className="main-grid">
+      {/* LEFT: sidebar controls */}
+      <aside className="sidebar">
+        {/* Dataset parameters */}
+        <div className="control-section">
+          <h3>Dataset parameters</h3>
+
+          <div className="control-group">
+            <label htmlFor="em-k">K (true Gaussians)</label>
+            <div className="slider-container">
+              <input
+                id="em-k"
+                type="range"
+                min={1}
+                max={8}
+                value={K}
+                onChange={(e) => setK(Number(e.target.value))}
+              />
+              <span className="slider-value">{K}</span>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="em-seed">Seed</label>
+            <input
+              id="em-seed"
+              type="number"
+              value={seed}
+              onChange={(e) => setSeed(Number(e.target.value))}
+            />
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="em-n">n (points)</label>
+            <div className="slider-container">
+              <input
+                id="em-n"
+                type="range"
+                min={100}
+                max={2000}
+                step={100}
+                value={n}
+                onChange={(e) => setN(Number(e.target.value))}
+              />
+              <span className="slider-value">{n}</span>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="em-cov-min">cov_diag_min</label>
+            <div className="slider-container">
+              <input
+                id="em-cov-min"
+                type="range"
+                min={0.1}
+                max={2.0}
+                step={0.1}
+                value={covDiagMin}
+                onChange={(e) => setCovDiagMin(Number(e.target.value))}
+              />
+              <span className="slider-value">{covDiagMin.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="em-cov-max">cov_diag_max</label>
+            <div className="slider-container">
+              <input
+                id="em-cov-max"
+                type="range"
+                min={0.2}
+                max={4.0}
+                step={0.1}
+                value={covDiagMax}
+                onChange={(e) => setCovDiagMax(Number(e.target.value))}
+              />
+              <span className="slider-value">{covDiagMax.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="em-mean-min">mean_min</label>
+            <div className="slider-container">
+              <input
+                id="em-mean-min"
+                type="range"
+                min={-10}
+                max={0}
+                step={0.5}
+                value={meanMin}
+                onChange={(e) => setMeanMin(Number(e.target.value))}
+              />
+              <span className="slider-value">{meanMin.toFixed(1)}</span>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="em-mean-max">mean_max</label>
+            <div className="slider-container">
+              <input
+                id="em-mean-max"
+                type="range"
+                min={0}
+                max={10}
+                step={0.5}
+                value={meanMax}
+                onChange={(e) => setMeanMax(Number(e.target.value))}
+              />
+              <span className="slider-value">{meanMax.toFixed(1)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Algorithm parameters */}
+        <div className="control-section">
+          <h3>Algorithm parameters</h3>
+
+          <div className="control-group">
+            <label htmlFor="em-C">C (components used by EM)</label>
+            <div className="slider-container">
+              <input
+                id="em-C"
+                type="range"
+                min={1}
+                max={8}
+                value={C}
+                onChange={(e) => setC(Number(e.target.value))}
+              />
+              <span className="slider-value">{C}</span>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="em-iters">num_iters</label>
+            <div className="slider-container">
+              <input
+                id="em-iters"
+                type="range"
+                min={1}
+                max={50}
+                value={numIters}
+                onChange={(e) => setNumIters(Number(e.target.value))}
+              />
+              <span className="slider-value">{numIters}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Run button + error */}
+        <div className="control-section actions">
+          {error && <div className="error">{error}</div>}
+          <div className="button-group">
+            <button
+              onClick={runEm}
+              disabled={loading}
+              className="btn btn-primary"
+            >
+              {loading ? "Running EM..." : "Run EM"}
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* RIGHT: main visualization area */}
+      <section className="visualization-area">
+        <div className="tabs">
+          <button className="tab active">EM Visualization</button>
+        </div>
+
+        {loading && <div className="loading">Running EM on the server…</div>}
+
+        {!loading && !trace && (
+          <div className="loading">
+            No trace yet. Adjust parameters and click “Run EM”.
+          </div>
+        )}
+
+        {!loading && trace && (
+          <>
+            {/* iteration slider card styled like K-Means */}
+            <div className="iteration-controls">
+              <div className="iteration-info">
+                <div>
+                  <div className="plot-title">Iteration</div>
+                  <div>
+                    Step {iter} of {trace.steps.length - 2}
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={trace.steps.length - 2}
+                  value={iter}
+                  onChange={(e) => setIter(Number(e.target.value))}
+                  className="iteration-slider"
+                />
+              </div>
             </div>
 
-            <div className="em-layout">
-            {/* LEFT: sidebar controls */}
-            <aside className="em-controls">
-                <h3>Dataset parameters</h3>
-                <div className="em-control-section">
-                <div className="em-control-group">
-                    <label>K (true Gaussians): {K}</label>
-                    <input
-                    type="range"
-                    min={1}
-                    max={8}
-                    value={K}
-                    onChange={(e) => setK(Number(e.target.value))}
-                    />
+            {/* 3D plot + log-likelihood row (uses EM-specific classes) */}
+            <div className="em-plot-row">
+              <div className="plot-container em-plot-3d">
+                <div className="plot-title">
+                  Cluster assignments & Gaussians
                 </div>
+                {renderEmPlot(trace, iter, layout)}
+              </div>
 
-                <div className="em-control-group">
-                    <label>Seed:</label>
-                    <input
-                    type="number"
-                    value={seed}
-                    onChange={(e) => setSeed(Number(e.target.value))}
-                    style={{ width: "5rem" }}
-                    />
-                </div>
-
-                <div className="em-control-group">
-                    <label>n (points): {n}</label>
-                    <input
-                    type="range"
-                    min={100}
-                    max={2000}
-                    step={100}
-                    value={n}
-                    onChange={(e) => setN(Number(e.target.value))}
-                    />
-                </div>
-
-                <div className="em-control-group">
-                    <label>cov_diag_min: {covDiagMin.toFixed(2)}</label>
-                    <input
-                    type="range"
-                    min={0.1}
-                    max={2.0}
-                    step={0.1}
-                    value={covDiagMin}
-                    onChange={(e) => setCovDiagMin(Number(e.target.value))}
-                    />
-                </div>
-
-                <div className="em-control-group">
-                    <label>cov_diag_max: {covDiagMax.toFixed(2)}</label>
-                    <input
-                    type="range"
-                    min={0.2}
-                    max={4.0}
-                    step={0.1}
-                    value={covDiagMax}
-                    onChange={(e) => setCovDiagMax(Number(e.target.value))}
-                    />
-                </div>
-
-                <div className="em-control-group">
-                    <label>mean_min: {meanMin.toFixed(1)}</label>
-                    <input
-                    type="range"
-                    min={-10}
-                    max={0}
-                    step={0.5}
-                    value={meanMin}
-                    onChange={(e) => setMeanMin(Number(e.target.value))}
-                    />
-                </div>
-
-                <div className="em-control-group">
-                    <label>mean_max: {meanMax.toFixed(1)}</label>
-                    <input
-                    type="range"
-                    min={0}
-                    max={10}
-                    step={0.5}
-                    value={meanMax}
-                    onChange={(e) => setMeanMax(Number(e.target.value))}
-                    />
-                </div>
-                </div>
-
-                <h3>Algorithm parameters</h3>
-                <div className="em-control-section">
-                <div className="em-control-group">
-                    <label>C (components used by EM): {C}</label>
-                    <input
-                    type="range"
-                    min={1}
-                    max={8}
-                    value={C}
-                    onChange={(e) => setC(Number(e.target.value))}
-                    />
-                </div>
-
-                <div className="em-control-group">
-                    <label>num_iters: {numIters}</label>
-                    <input
-                    type="range"
-                    min={1}
-                    max={50}
-                    value={numIters}
-                    onChange={(e) => setNumIters(Number(e.target.value))}
-                    />
-                </div>
-                </div>
-
-                <div className="em-actions">
-                <button
-                    
-                    onClick={runEm}
-                    disabled={loading}
-                    className="em-run-btn"
-                >
-                    {loading ? "Running EM..." : "Run EM"}
-                </button>
-                </div>
-            </aside>
-
-            {/* RIGHT: main visualization card */}
-            <main className="em-plot">
-                {trace ? (
-                <>
-                    {/* iteration slider */}
-                    <div className="em-iter-control">
-                    <label>Iteration: {iter} / {trace.steps.length - 2}</label>
-                    <input
-                        type="range"
-                        min={0}
-                        max={trace.steps.length - 2}
-                        value={iter}
-                        onChange={(e) => setIter(Number(e.target.value))}
-                        className="em-iter-slider"
-                    />
-                    </div>
-
-                    <div className="em-plot-row">
-                    <div className="em-plot-3d">
-                        {renderEmPlot(trace, iter, layout)}
-                    </div>
-
-                    <div className="em-loglikelihood-chart">
-                        <LogLikelihoodChart
-                        values={trace.log_likelihoods}
-                        currentIter={iter}
-                        />
-                    </div>
-                    </div>
-                </>
-                ) : (
-                !loading && <p>No trace yet. Adjust parameters and click Run EM.</p>
-                )}
-            </main>
+              <div className="plot-container em-loglikelihood-chart">
+                <div className="plot-title">Log-likelihood over iterations</div>
+                <LogLikelihoodChart
+                  values={trace.log_likelihoods}
+                  currentIter={iter}
+                />
+              </div>
             </div>
-        </section>
-        );
+          </>
+        )}
+      </section>
+    </div>
+  </section>
+);
     
         
 }
