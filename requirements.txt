@@ -1,1 +1,4 @@
 fastapi[all]
+numpy
+scikit-learn
+pydantic
