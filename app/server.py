@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes_em import router as em_router
 # from app.api.routes_kmeans import router as kmeans_router
-# from app.api.routes_pca import router as pca_router
+from app.api.routes_pca import router as pca_router
 # etc.
 
 app = FastAPI(
@@ -30,4 +30,4 @@ def health():
 # Mount routers under a common prefix
 app.include_router(em_router, prefix="/api/trace", tags=["em"]) # reachable at /api/trace/em, POST body as EMRequest formatted JSON 
 # app.include_router(kmeans_router, prefix="/api/trace", tags=["kmeans"])
-# app.include_router(pca_router, prefix="/api/trace", tags=["pca"])
+app.include_router(pca_router, prefix="/api/trace", tags=["pca"])
