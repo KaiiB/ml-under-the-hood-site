@@ -18,7 +18,6 @@ function mulberry32(seed: number) {
 function seededSampleIndices(n: number, k: number, seed = 42) {
   const rng = mulberry32(seed);
   const arr = Array.from({ length: n }, (_, i) => i);
-  // Fisher-Yates shuffle
   for (let i = n - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -26,30 +25,30 @@ function seededSampleIndices(n: number, k: number, seed = 42) {
   return arr.slice(0, k);
 }
 
-const PCAVisualizer: React.FC = () => {
-  // Slider angle is absolute degrees (0..360)
+interface PCAVisualizerProps {
+  showEllipse?: boolean;      // default true
+  showEigenvector?: boolean;  // default true
+}
+
+const PCAVisualizer: React.FC<PCAVisualizerProps> = ({
+  showEllipse = true,
+  showEigenvector = true,
+}) => {
   const [angleDeg, setAngleDeg] = useState<number>(0);
 
-  // Load data from JSON
-  const raw: number[][] = pcaData.data[0]; // (100,2)
+  const raw: number[][] = pcaData.data[0];
   const projectedScalar: number[] = pcaData.projected[0].map((p: any) => p[0]);
   const [cx, cy] = pcaData.meta.ellipse.ellipse_center;
   const center: [number, number] = [cx, cy];
   const ellipse_width: number = pcaData.meta.ellipse.ellipse_width;
   const ellipse_height: number = pcaData.meta.ellipse.ellipse_height;
-  const eigvecs = pcaData.meta.eigens.eigvecs; // [[vx], [vy]]
-  // convert eigvecs to 2-vector
+  const eigvecs = pcaData.meta.eigens.eigvecs;
   const truePC: [number, number] = [eigvecs[0][0], eigvecs[1][0]];
   const eigval = pcaData.meta.eigens.eigvals?.[0] ?? 1;
 
-  // Precompute the true PCA angle for reference arrow
-  const truePCAAngle = Math.atan2(truePC[1], truePC[0]);
-
-  // Guess axis unit vector from slider (absolute)
   const angleRad = (angleDeg * Math.PI) / 180;
   const guessVec: [number, number] = [Math.cos(angleRad), Math.sin(angleRad)];
 
-  // Projections computed relative to mean/center (correct centering)
   const projections = useMemo(() => {
     return raw.map((pt) => {
       const dx = pt[0] - center[0];
@@ -61,8 +60,14 @@ const PCAVisualizer: React.FC = () => {
     });
   }, [raw, center, guessVec]);
 
-  // A line along the axis showing the distribution of projected scalars:
-  // sort by scalar and create a line (connected) along guessVec
+const totalSquaredDistance = useMemo(() => {
+    return projections.reduce((sum, p) => {
+      const dx = p.orig[0] - p.proj[0];
+      const dy = p.orig[1] - p.proj[1];
+      return sum + dx * dx + dy * dy;
+    }, 0);
+  }, [projections]);
+
   const projectionLine = useMemo(() => {
     const sorted = [...projections].sort((a, b) => a.scalar - b.scalar);
     const xs = sorted.map((s) => s.proj[0]);
@@ -70,39 +75,19 @@ const PCAVisualizer: React.FC = () => {
     return { xs, ys };
   }, [projections]);
 
-  // Projected point arrays (for marker trace)
   const projXs = projections.map((p) => p.proj[0]);
   const projYs = projections.map((p) => p.proj[1]);
-
-  // Original data arrays
   const dataXs = raw.map((r) => r[0]);
   const dataYs = raw.map((r) => r[1]);
 
-  // Guess axis (long line across plot)
-  const axisLen = Math.max(ellipse_width, ellipse_height) * 1.5; // length for visibility
-  const guessAxisX = [
-    center[0] - axisLen * guessVec[0],
-    center[0] + axisLen * guessVec[0],
-  ];
-  const guessAxisY = [
-    center[1] - axisLen * guessVec[1],
-    center[1] + axisLen * guessVec[1],
-  ];
+  const axisLen = Math.max(ellipse_width, ellipse_height) * 1.5;
+  const guessAxisX = [center[0] - axisLen * guessVec[0], center[0] + axisLen * guessVec[0]];
+  const guessAxisY = [center[1] - axisLen * guessVec[1], center[1] + axisLen * guessVec[1]];
 
-  // True PCA short arrow (±arrowLen along truePC)
   const arrowLen = Math.max(ellipse_width, ellipse_height) * 0.6;
-  const trueAxisX = [
-    center[0] - arrowLen * truePC[0],
-    center[0] + arrowLen * truePC[0],
-  ];
-  const trueAxisY = [
-    center[1] - arrowLen * truePC[1],
-    center[1] + arrowLen * truePC[1],
-  ];
+  const trueAxisX = [center[0] - arrowLen * truePC[0], center[0] + arrowLen * truePC[0]];
+  const trueAxisY = [center[1] - arrowLen * truePC[1], center[1] + arrowLen * truePC[1]];
 
-  // Ellipse points rotated by slider angle.
-  // (As discussed: for B this is equivalent to rotating by slider angle
-  // so students see the ellipse orientation they chose).
   const ellipsePoints = useMemo(() => {
     const steps = 300;
     const t = Array.from({ length: steps }, (_, i) => (2 * Math.PI * i) / steps);
@@ -117,7 +102,6 @@ const PCAVisualizer: React.FC = () => {
     for (let tt of t) {
       const x0 = a * Math.cos(tt);
       const y0 = b * Math.sin(tt);
-      // rotate by angleRad (absolute)
       const xr = x0 * cosA - y0 * sinA;
       const yr = x0 * sinA + y0 * cosA;
       xs.push(center[0] + xr);
@@ -126,10 +110,7 @@ const PCAVisualizer: React.FC = () => {
     return { xs, ys };
   }, [ellipse_width, ellipse_height, center, angleRad]);
 
-  // Residual (distance-to-axis) subset indices deterministic by seed
   const residualIndices = useMemo(() => seededSampleIndices(raw.length, 20, 42), [raw.length]);
-
-  // Residual line traces for the selected indices
   const residualLines = residualIndices.map((idx) => {
     const p = projections[idx];
     return {
@@ -143,63 +124,52 @@ const PCAVisualizer: React.FC = () => {
     };
   });
 
-  // Small helper to add arrowheads via layout annotations
-  const pcaArrowAnnotations = [
-    {
-      x: trueAxisX[1],
-      y: trueAxisY[1],
-      ax: center[0],
-      ay: center[1],
-      xref: "x",
-      yref: "y",
-      axref: "x",
-      ayref: "y",
-      text: "",
-      showarrow: true,
-      arrowhead: 2,
-      arrowsize: 1,
-      arrowwidth: 1,
-      arrowcolor: "rgba(60,60,60,0.35)",
-      standoff: 0,
-    },
-    {
-      x: trueAxisX[0],
-      y: trueAxisY[0],
-      ax: center[0],
-      ay: center[1],
-      xref: "x",
-      yref: "y",
-      axref: "x",
-      ayref: "y",
-      text: "",
-      showarrow: true,
-      arrowhead: 2,
-      arrowsize: 1,
-      arrowwidth: 1,
-      arrowcolor: "rgba(60,60,60,0.35)",
-      standoff: 0,
-    },
-  ];
-
-  // compute plot bounds automatically a bit padded
-  const allXs = [...dataXs, ...projXs, ...ellipsePoints.xs, guessAxisX[0], guessAxisX[1]];
-  const allYs = [...dataYs, ...projYs, ...ellipsePoints.ys, guessAxisY[0], guessAxisY[1]];
-  const minX = Math.min(...allXs);
-  const maxX = Math.max(...allXs);
-  const minY = Math.min(...allYs);
-  const maxY = Math.max(...allYs);
-  const pad = 0.6;
-  const xrange: [number, number] = [minX - pad, maxX + pad];
-  const yrange: [number, number] = [minY - pad, maxY + pad];
+  const pcaArrowAnnotations = showEigenvector
+    ? [
+        {
+          x: trueAxisX[1],
+          y: trueAxisY[1],
+          ax: center[0],
+          ay: center[1],
+          xref: "x",
+          yref: "y",
+          axref: "x",
+          ayref: "y",
+          text: "",
+          showarrow: true,
+          arrowhead: 2,
+          arrowsize: 1,
+          arrowwidth: 1,
+          arrowcolor: "rgba(60,60,60,0.35)",
+          standoff: 0,
+        },
+        {
+          x: trueAxisX[0],
+          y: trueAxisY[0],
+          ax: center[0],
+          ay: center[1],
+          xref: "x",
+          yref: "y",
+          axref: "x",
+          ayref: "y",
+          text: "",
+          showarrow: true,
+          arrowhead: 2,
+          arrowsize: 1,
+          arrowwidth: 1,
+          arrowcolor: "rgba(60,60,60,0.35)",
+          standoff: 0,
+        },
+      ]
+    : [];
 
   return (
-   <div className="visualizer-container">
-    <div className="visualizer-card">
+    <div className="visualizer-container">
+      <div className="visualizer-card">
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <h2 className="figure-title">PCA Interactive Explorer</h2>
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <h2 className="figure-title">PCA Interactive Explorer</h2>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}>
             <input
               type="range"
               min={0}
@@ -212,107 +182,99 @@ const PCAVisualizer: React.FC = () => {
             <div style={{ width: 90, textAlign: "right" }}>{angleDeg}°</div>
           </div>
 
-      <Plot
-        data={[
-          // raw data points (semi-transparent because dense)
-          {
-            x: dataXs,
-            y: dataYs,
-            mode: "markers",
-            type: "scatter",
-            name: "Data (standardized)",
-            marker: { size: 6, opacity: 1, color: "rgba(255,165,0,1)" },
-            hoverinfo: "x+y",
-          },
+          {/* New label showing total squared distance */}
+          <div style={{ marginBottom: 8, fontSize: 14 }}>
+            <strong>Total squared distance to guess axis:</strong> {totalSquaredDistance.toFixed(3)}
+          </div>
 
-          // User guess for Principal Component
-          {
-            x: guessAxisX,
-            y: guessAxisY,
-            mode: "lines",
-            type: "scatter",
-            name: "Guess Axis",
-            line: { width: 2.5, color: "rgba(0,0,0,1)" },
-          },
-
-          // projection line along axis (connected) to show variance spread
-          {
-            x: projectionLine.xs,
-            y: projectionLine.ys,
-            mode: "lines",
-            type: "scatter",
-            name: "Range of Projection",
-            line: { width: 3, color: "rgba(238,130,238,1)" },
-          },
-
-          // projected points (on axis) - semi-transparent but visible
-          {
-            x: projXs,
-            y: projYs,
-            mode: "markers",
-            type: "scatter",
-            name: "Projected points",
-            marker: { size: 8, opacity: 0.3, color: "rgba(0,128,0,1)" },
-            hoverinfo: "none",
-          },
-
-          // ellipse (rotating)
-          {
-            x: ellipsePoints.xs,
-            y: ellipsePoints.ys,
-            mode: "lines",
-            type: "scatter",
-            name: "Ellipse",
-            line: { width: 2, color: "rgba(128,128,128,1)" },
-          },
-
-          // true PCA axis faint short line (for visual fallback, same color as annotations)
-          {
-            x: trueAxisX,
-            y: trueAxisY,
-            mode: "lines",
-            type: "scatter",
-            name: "True Principal Component",
-            line: { width: 2, dash: "solid", color: "rgba(0,0,255,0.4)" },
-          },
-          // then spread residual lines
-          ...residualLines,
-        ]}
-        layout={{
-          autosize: true,
-          width: 720,
-          height: 720,
-          title: "Rotate to Maximize Variance Explained",
-          showlegend: true,
-          xaxis: {
-            range: [-4,4],
-            zeroline: false,
-            scaleanchor: "y",
-            scaleratio: 1,
-            title: "x",
-          },
-          yaxis: {
-            range: [-4, 4],
-            zeroline: false,
-            title: "y",
-          },
-          margin: { l: 60, r: 20, t: 60, b: 60 },
-          annotations: pcaArrowAnnotations,
-        }}
-        config={{ responsive: true,  displayModeBar: false  }}
-      />
-      <div style={{ fontSize: 13, marginTop: 8 }}>
-        <strong>Notes:</strong>{" "}
-        <span style={{ opacity: 0.85 }}>
-          Projections are computed as <code>(x - mean)·v</code> and placed back on the axis at{" "}
-          <code>mean + scalar·v</code>. Residuals (red lines) are shown for 20 deterministic points
-          (seed=42).
-        </span>
+          <Plot
+            data={[
+              {
+                x: dataXs,
+                y: dataYs,
+                mode: "markers",
+                type: "scatter",
+                name: "Data (standardized)",
+                marker: { size: 6, opacity: 1, color: "rgba(255,165,0,1)" },
+                hoverinfo: "x+y",
+              },
+              {
+                x: guessAxisX,
+                y: guessAxisY,
+                mode: "lines",
+                type: "scatter",
+                name: "Guess Axis",
+                line: { width: 2.5, color: "rgba(0,0,0,1)" },
+              },
+              {
+                x: projectionLine.xs,
+                y: projectionLine.ys,
+                mode: "lines",
+                type: "scatter",
+                name: "Range of Projection",
+                line: { width: 3, color: "rgba(238,130,238,1)" },
+              },
+              {
+                x: projXs,
+                y: projYs,
+                mode: "markers",
+                type: "scatter",
+                name: "Projected points",
+                marker: { size: 8, opacity: 0.3, color: "rgba(0,128,0,1)" },
+                hoverinfo: "none",
+              },
+              ...(showEllipse
+                ? [
+                    {
+                      x: ellipsePoints.xs,
+                      y: ellipsePoints.ys,
+                      mode: "lines",
+                      type: "scatter",
+                      name: "Ellipse",
+                      line: { width: 2, color: "rgba(128,128,128,1)" },
+                    },
+                  ]
+                : []),
+              ...(showEigenvector
+                ? [
+                    {
+                      x: trueAxisX,
+                      y: trueAxisY,
+                      mode: "lines",
+                      type: "scatter",
+                      name: "Eigenvector",
+                      line: { width: 2, dash: "solid", color: "rgba(0,0,255,0.4)" },
+                    },
+                  ]
+                : []),
+              ...residualLines,
+            ]}
+            layout={{
+              autosize: true,
+              width: 720,
+              height: 720,
+              title: "Rotate to Maximize Variance Explained",
+              showlegend: true,
+              xaxis: {
+                range: [-4, 4],
+                zeroline: false,
+                scaleanchor: "y",
+                scaleratio: 1,
+                title: "x",
+              },
+              yaxis: {
+                range: [-4, 4],
+                zeroline: false,
+                title: "y",
+              },
+              margin: { l: 60, r: 20, t: 60, b: 60 },
+              annotations: pcaArrowAnnotations,
+            }}
+            config={{ responsive: true, displayModeBar: false }}
+          />
+        </div>
       </div>
-
-      </div>
-    </div> 
-  </div>
+    </div>
   );
 };
 

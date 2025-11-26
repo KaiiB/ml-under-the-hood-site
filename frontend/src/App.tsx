@@ -7,9 +7,6 @@ import ImageContainer from "./ImageContainer";
 import DataFrameTable from "./DataFrameTable";
 
 function App() {
-  const Eq = ({ children }: { children: React.ReactNode }) => (
-  <BlockMath>{children}</BlockMath>
-  );
   return (
     <div>
       <h1> How PCA Works </h1>
@@ -17,14 +14,11 @@ function App() {
       <h2 className="section-title">PCA: Why Do We Need It?</h2>
 
       <div className="main-text">
-
         <p>
           Let's say you're interested in Mixed Martial Arts (MMA) fighters, just like me! 
           There's one particular Ultimate Fighting Championship (UFC) fighter that I love:
         </p>
-      </div>
 
-      <div className="main-text">
         <blockquote>
           <b>Zabit Magomedsharipov!</b>
         </blockquote>
@@ -86,7 +80,7 @@ function App() {
 
       <div className="main-text">
         <blockquote>
-          <b>Enter Principal Component Analysis (PCA!)</b>
+          Enter<b> Principal Component Analysis (PCA)</b>!
         </blockquote>
       </div>
 
@@ -96,7 +90,7 @@ function App() {
         </p>
         <p>
           PCA can be used for <b>Dimensionality Reduction</b>. For example, you can <b>find just 2 or 3 axes</b> for a <b>9-dimensional data. </b>
-          By <b>projecting the 9-D data onto our two axes </b>, we're <b>left with 2-D data</b>, meaning we can <b>easily visualize it.</b>
+          By <b>projecting the 9D data onto our 2 axes </b>, we're <b>left with 2D data</b>, meaning we can <b>easily visualize it.</b>
         </p>
         <p>
           I'll explain how PCA works later, but let's just see it in action (you can hover over points)!
@@ -149,7 +143,7 @@ function App() {
           We can try just projecting them onto the X (or Y) axis, which will give us a number line.
         </p>
         <p>
-          Mathematically, this just means setting only the x-value of the points to 0 to plot on the y-axis, and setting only the y-value of the poitns to 0 to plot on the x-axis.
+          Mathematically, this just means setting only the x-value of the points to 0 to plot on the y-axis, and setting only the y-value of the points to 0 to plot on the x-axis.
         </p>
       </div>
 
@@ -170,7 +164,7 @@ function App() {
           Of course, we have the same problem with the blue axis, as it only captures information about <b>how close the points are vertically</b>.
         </p>
         <p>
-          Our job is to figure out what the <b>best axis to plot this "number line" is</b> We'll call this axis the <b>"principal axis"</b>.
+          Our job is to figure out what the <b>best axis to plot this "number line" is</b>. We'll call this axis the <b>"principal axis"</b>.
         </p>
         <p>
           Suppose we have the below data.
@@ -186,14 +180,14 @@ function App() {
 
       <div className="main-text">
         <p>
-          Our <b>first step</b> is to <b>standardize</b> the data.
+          Our <b>first step</b> is to <b>standardize</b> (subtract by mean and divide by standard deviation) the data.
         </p>
         <p>
           Often, the x and y values of data have different scales. If you took (x,y) = (height, weight), they wouldn't be distributed the same, would they? 
           Standardizing makes sure we don't have to deal with that problem.
         </p>
         <p>
-          Let's standardize (subtract by mean and divide by standard deviation) this data to make our lives easier.
+          Let's standardize this data to make our lives easier.
         </p>
       </div>
 
@@ -272,11 +266,405 @@ function App() {
         <p>
           We do this by using the familiar projection formula from MATH 18 and 20C:
         </p>
+
+        <BlockMath math={String.raw`\text{Proj}_{\mathbf{u}}\mathbf{v} = \frac{\mathbf{u} \cdot \mathbf{v}}{\lVert \mathbf{u} \rVert^2} \mathbf{u}`} />
       </div>
 
-      <PCASliderInteractive />
+
+      <ImageContainer>
+
+      <img src="/images/distanceFromAxis.png" className="original-image" />
+      
+      </ImageContainer>
+
+      <div className="main-text">
+        <p>
+          Let's examine several test cases:
+        </p>
+      </div>
+
+      <ImageContainer>
+
+      <img src="/images/badPrincipalComponent1.png" className="original-image" />
+      
+      </ImageContainer>
+
+      <div className="main-text">
+        <p>
+          We can see that while the axis may capture the horizontal spread, 
+          <b>it doesn't capture the vertical spread at all</b>. 
+          We can see this because <b>vertical distance from the points to the axis is huge for most of our points.</b>
+        </p>
+      </div>
+
+      <ImageContainer>
+
+      <img src="/images/badPrincipalComponent2.png" className="original-image" />
+      
+      </ImageContainer>
+  
+      <div className="main-text">
+        <p>
+          Similiarly, we can see that while the axis may capture the vertical spread,
+          <b>it doesn't capture the horiontal spread at all</b>. 
+          We can see this because <b>horizontal distance from the points to the axis is huge for most of our points.</b>
+        </p>
+      </div>
+
+      <ImageContainer>
+
+      <img src="/images/goodPrincipalComponent.png" className="original-image" />
+      
+      </ImageContainer>
+
+     <div className="main-text">
+        <p>
+          Meanwhile, we see that this axis captures 
+          <b> both the horizontal and vertical spread pretty well</b>, as its  
+          <b> distance from the points are reasonably smaller.</b>
+        </p>
+        <p>
+          Notice how the spacing on the green projections changes with different principal axes. Note how 
+          <b> bad principal axes can trick you into thinking two points are close when they're really not.</b>
+        </p>
+        <p>
+          With the below interactive, do you think you can find the "best" axis? (Hint! Pay attention to "Total squared distance to guess axis"!)
+        </p>
+      </div>
+      
+      <PCASliderInteractive showEllipse={false} showEigenvector={false} />
+
+      <div className="main-text">
+        <p>
+          Notice how the pink line becomes longer as you get closer to the "best" axis. 
+        </p>
+        <p>
+          Intuitively, this means that <b>we're "explaining" more and more of our data</b>!
+        </p>
+      </div>
+
+      <div className="main-text">
+        <p>
+          You might be thinking,
+        </p>
+        <blockquote>
+          How do you nail it down to one axis?
+        </blockquote>
+        <p>
+          We'll show you how to pinpoint one mathematically.
+        </p>
+        <p>
+          The formula for distance to the principal component is:
+           <InlineMath math={String.raw`\mathbf{d} = \tilde{\mathbf{x}} - \text{Proj}_{\mathbf{p}}\tilde{\mathbf{x}} = \tilde{\mathbf{x}} - \frac{\mathbf{p} \cdot \tilde{\mathbf{x}}}{\|\mathbf{p}\|^2}\mathbf{p}`} />
+        </p>
+        <p>Where:</p>
+        <ul>
+          <li><InlineMath math={String.raw`\mathbf{d}`} /> is the distance to the principal component</li>
+          <li><InlineMath math={String.raw`\tilde{\mathbf{x}} = \mathbf{x} - \boldsymbol{\mu}`} />
+           is the standardized data point <i>after</i> x has been divided by the standard deviation</li>
+          <li><InlineMath math={String.raw`\mathbf{p}`} /> is the principal component vector</li>
+        </ul>
+        <p>
+          We see that a "good" principal component should have the <b>least distance between the points and principal component</b>!
+        </p>
+        <p>
+          What we need to do is to <b>find a vector</b> that <b>minimizes the total distance between the points and the lines</b>!
+        </p>
+      </div>
+
+      <div className="main-text">
+        <blockquote>
+          <p>
+            <b>The Big Idea 2</b>
+          </p>
+          <p>
+            <em>We need to find a principal component that minimizes <code>sum</code></em>
+          </p>
+        </blockquote>
+        <p>
+          <code>sum = 0</code>
+        </p>
+        <p>
+          <code>for data in data_points:</code>
+        </p>
+        <p style={{ paddingLeft: "1em" }}>
+          <code>sum += distance(data, principal_component)</code>
+        </p>
+        <p>
+          Because we just need to find a direction, we can put a constraint that <InlineMath math={String.raw`magnitude(principal\_component) = 1`} />.
+        </p>
+        <p>
+          This has no effect on the problem that we're solving, and makes our math easier!
+        </p>
+        <p>
+          Written in big scary math, it looks like this:
+        </p>
+
+      <BlockMath math={String.raw`\begin{aligned}
+      \displaystyle \min_{\mathbf{p}}\sum_{i}\|\mathbf{d}_i\| &= 
+      \displaystyle \min_{\mathbf{p}}\sum_{i}\|\tilde{\mathbf{x}}_{i} - \text{Proj}_{\mathbf{p}}\tilde{\mathbf{x}}_{i}\| \\
+      &= \displaystyle \min_{\mathbf{p}}\sum_{i}\|\tilde{\mathbf{x}}_{i} - \frac{\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}}{\|\mathbf{p}\|^2}\mathbf{p}\|
+      \end{aligned}`} />
+      </div>
+
+      <div className="main-text">
+        <p>
+          You might be thinking,
+        </p>
+
+        <blockquote>
+          <p>
+            <em>But aren't there infinitely many principal components we need to check? I mean, even our slider had 360 angles to choose for how our principal component looked like!</em>
+          </p>
+        </blockquote>
+
+        <p>
+          This is where we have to do some math; <b>don't worry, it's just algebra.</b>
+        </p>
+      </div>
+
+      <details>
+        <summary
+          style={{
+            fontSize: "1.3em",
+            fontWeight: "bold",
+            padding: "8px",
+            cursor: "pointer"
+          }}
+        >
+          "Find principal component <InlineMath math={String.raw`\mathbf{p}`} /> that minimizes the distance between points <InlineMath math={String.raw`\tilde{\mathbf{x}}`} /> and principal component <InlineMath math={String.raw`\mathbf{p}`} />"
+        </summary>
+
+        <div style={{ marginLeft: "10px" }} className="main-text">
+          <BlockMath math={String.raw`\begin{aligned}
+          \min_{\mathbf{p}} \sum_{i} \lVert \mathbf{d} \rVert^2 
+          &= \min_{\mathbf{p}} \sum_{i} \lVert \tilde{\mathbf{x}}_{i} - \mathrm{Proj}_{\mathbf{p}} \tilde{\mathbf{x}}_{i} \rVert^2 \\
+          &= \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
+          \frac{\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}}{\lVert \mathbf{p} \rVert^2} \mathbf{p} \right\rVert^2 \\ 
+          &= \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
+          (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p} \right\rVert^2 
+          \quad \text{Remember that we defined } \lVert \mathbf{p} \rVert^2 = 1
+          \end{aligned}`} />
+
+          <p><em>Note 1.</em> We use norm squared (i.e., "un-root it") instead of norm because:</p>
+          <ul>
+            <li>It makes our math easier</li>
+            <li>It's easier to compute</li>
+            <li>It has no overall effect on our solution</li>
+          </ul>
+
+          <p><em>Note 2.</em> On line 4, because we defined principal component <strong>p</strong> to be a unit vector.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary
+          style={{
+            fontSize: "1.3em",
+            fontWeight: "bold",
+            padding: "8px",
+            cursor: "pointer"
+          }}
+        >
+          Some algebra...
+        </summary>
+
+        <div style={{ marginLeft: "10px" }} className="main-text">
+          <BlockMath math={String.raw`\begin{aligned}
+      \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
+      (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p} \right\rVert^2 
+      &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - 2( (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p})\tilde{\mathbf{x}}_{i} + ((\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p})^2) \quad \text{just expanding the square.} \\ 
+      &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - 2(\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})(\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) + (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2\mathbf{p}^2) 
+      \quad \text{Let's not forget that } \mathbf{p}^2 = \mathbf{p} \cdot \mathbf{p} = \|\mathbf{p}\|^2 = 1^2 = 1\\
+      &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - 2(\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2 + (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2) \\
+      &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2)
+      \end{aligned}`} />
+        </div>
+      </details>
+
+      <details>
+        <summary
+          style={{
+            fontSize: "1.3em",
+            fontWeight: "bold",
+            padding: "8px",
+            cursor: "pointer"
+          }}
+        >
+          Some more algebra...
+        </summary>
+
+        <div style={{ marginLeft: "10px" }} className="main-text">
+          <BlockMath math={String.raw`\begin{aligned}
+      \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2)
+      &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2
+      \quad \text{Because } \tilde{\mathbf{x}}^2 \text{ is a constant} \\
+      &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i})^\text{T} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}) 
+      \quad \text{Remembering that } \mathbf{p} \cdot \tilde{\mathbf{x}}_{i} = \mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i} \\
+      &= \max_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p}) (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}) \\
+      &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}) (\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p})
+      \quad \text{Scalar commutativity; because } \mathbf{p}^\text{T} \tilde{\mathbf{x}} \text{ is a dot product which produces a scalar} \\
+      &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p})
+      \end{aligned}`} />
+
+          <p><em>Note 1.</em> If you're confused on on line 1 think about it like this:</p>
+          <ul>
+            <li>You want to minimize <InlineMath math={String.raw`1-t`} /></li>
+            <li>As <InlineMath math={String.raw`t`} /> gets bigger, <InlineMath math={String.raw`1-t`} /> gets smaller</li>
+            <li>So you can just minimize <InlineMath math={String.raw`t`} /></li>
+          </ul>
+
+        </div>
+      </details>
+
+      <div className="main-text">
+        <p>We get to something like this:</p>
+
+        <BlockMath math={String.raw`\begin{aligned}
+      \min_{\mathbf{p}} \sum_{i} \lVert \mathbf{d} \rVert^2 
+      = \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p})
+      \end{aligned}`} />
+
+        <p>Remember that in statistics, the covariance matrix is defined as:</p>
+
+        <BlockMath math={String.raw`\begin{aligned}
+      \mathbf{S} = \frac{1}{N}\sum_{i}(\mathbf{x}_{i} - \boldsymbol{\mu})(\mathbf{x}_{i} - \boldsymbol{\mu})^\text{T}
+      \end{aligned}`} />
+
+        <p>
+          Though this is just for convenience, calculating the covariance matrix is more informative and mentally less stressful than just 
+          plugging and chugging into whatever formula we had up there.
+          More importantly, <b>the covariance matrix has some interesting geometric properties</b> which we'll touch on later.
+        </p>
+
+        <p>
+          Remember also that we defined <InlineMath math={String.raw`\tilde{\mathbf{x}} = \mathbf{x} - \boldsymbol{\mu}`} />. Putting this all together:
+        </p>
+
+        <BlockMath math={String.raw`\begin{aligned}
+      \mathbf{S} = \frac{1}{N}\sum_{i} \tilde{\mathbf{x}}_{i} \tilde{\mathbf{x}}_{i}^\text{T}
+      \end{aligned}`} />
+      </div>
+
+      <details>
+        <summary
+          style={{
+            fontSize: "1.3em",
+            fontWeight: "bold",
+            padding: "8px",
+            cursor: "pointer"
+          }}
+        >
+          Even more algebra...
+        </summary>
+
+        <div style={{ marginLeft: "10px" }} className="main-text">
+          <BlockMath math={String.raw`\begin{aligned}
+      \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p}) 
+      &= \max_{\mathbf{p}} \mathbf{p}^\text{T} \sum_{i}(\tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T}) \mathbf{p}
+      \quad \mathbf{p} \text{ is not indexed by } i \text{, so we can move it to the outside.} \\ 
+      &= \max_{\mathbf{p}} \mathbf{p}^\text{T} N\mathbf{S} \mathbf{p} \\ 
+      &= \max_{\mathbf{p}} \mathbf{p}^\text{T} \mathbf{S} \mathbf{p}
+      \quad N \text{ is a constant, and so we just need } \mathbf{p}^\text{T} \mathbf{S} \mathbf{p} \text{ to hit the maximum.}
+      \end{aligned}`} />
+        </div>
+      </details>
+
+      <div className="main-text">
+        <p>We (finally) end here:</p>
+
+        <BlockMath math={String.raw`\begin{aligned}
+      \min_{\mathbf{p}} \sum_{i} \lVert \mathbf{d} \rVert^2 
+      = \max_{\mathbf{p}} \mathbf{p}^\text{T} \mathbf{S} \mathbf{p}
+      \end{aligned}`} />
+      </div>
+
+      <div className ="main-text">
+        The right-hand equation is actually very well known; it&apos;s related to a
+        special case of the <em>Rayleigh Quotient</em>, and it&apos;s known that the{" "}
+        <strong>eigenvectors with the largest eigenvalues of </strong>
+        <InlineMath math={String.raw`\mathbf{S}`} /> maximize this value (i.e., the
+        “biggest” eigenvectors).
+      </div>
+
+      <div className="main-text">
+        <blockquote>
+          <p style={{ fontSize: "1.6em", fontWeight: "bold" }}>
+            The Big Idea 3
+          </p>
+
+          <p style={{ fontSize: "1.1em" }}>
+            <em>
+              If we want the “best” principal component, we're looking for the{" "}
+              <strong>“biggest” eigenvectors of </strong>
+              <InlineMath math={String.raw`\mathbf{S}`} />
+            </em>
+          </p>
+        </blockquote>
+      </div>
+
+      <div className="main-text">
+        Let's see what happens when we use the "biggest" eigenvectors of <InlineMath math={String.raw`\mathbf{S}`} /> as our principal axes.
+      </div>
+
+      <PCASliderInteractive showEllipse={false} showEigenvector={true} />
+
+      <div className="main-text">
+        <p>But what does this all mean? This makes a lot of sense geometrically! Mathematically, the relationship</p>
+
+        <BlockMath math={String.raw`\mathbf{p}^\text{T} \mathbf{S} \mathbf{p}=c`} />
+
+        <p>
+          actually <strong>expands into the equation of an ellipse </strong>  
+           (try plugging <InlineMath math={String.raw`\langle x, y \rangle`} /> into{" "}
+          <InlineMath math={String.raw`\mathbf{p}`} />,  invent any 2×2 symmetric
+          matrix for <InlineMath math={String.raw`\mathbf{S}`} />, and expand <InlineMath math={String.raw`\mathbf{p}^\text{T} \mathbf{S} \mathbf{p}`}/>), 
+          where c is a constant. c is determined by the fact that <InlineMath math={String.raw`\mathbf{p} `}/> is 
+          a unit vector, which is what we defined. The eigenvectors
+          of <InlineMath math={String.raw`\mathbf{S}`} /> become the major and minor
+          axes of that ellipse.
+        </p>
+        <p>
+          So, <b><InlineMath math={String.raw`\mathbf{p}`} /> (the covariance matrix's eigenvectors) plot the axes of the ellipse that represents the covariance of the data.</b>
+        </p>
+        <p>
+          Moreover, <strong>
+            <InlineMath math={String.raw`\mathbf{p}`} />
+          </strong>{" "}
+          <b>gives us the directions of our principal components!</b>
+        </p>
+
+        <p>
+          And because covariance measures how variables vary together,{" "}
+          <strong>
+            the ellipse and its axes visually capture the “spread” of our dataset!
+          </strong>
+        </p>
+      </div>
+
+      <PCASliderInteractive showEllipse={true} showEigenvector={true} />
+
+      <div className = "main-text">
+        <p>
+          Notice how when our principal component is the "biggest" eigenvector, the <b>the ellipse drawn encapsulates the data</b>!
+        </p>
+        <blockquote>
+          That's how PCA works.
+        </blockquote>
+      </div>
 
       <h2 className="section-title">Understanding PCA Behavior</h2>
+
+      <div className = "main-text">
+        <p>
+          Now that you've (hopefully) understood how PCA mathematically works, we've 
+          provided a cool interactive where you can <b>generate your own data</b>, and 
+          understand how <b>PCA works under different data</b>!
+        </p>
+        <p>
+          Hit <em>Run PCA</em> to begin!
+        </p>
+      </div>
 
       <DisplayPCA />
     </div>
