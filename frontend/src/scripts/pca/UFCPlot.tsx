@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
-import "./components.css";
+import "../../styles/ryo_components.css";
 
 interface UFCTrace {
   name: string[];
