@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import Plot from "react-plotly.js";
-import "./globals.css";
-import "./components.css";
+import "../../globals.css";
+import "../../styles/ryo_components.css";
 
 type PCAPlotProps = {
   data: number[][][];
