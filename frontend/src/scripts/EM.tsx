@@ -2,6 +2,8 @@ import * as d3 from "d3";
 import { useEffect, useState, useRef, useMemo } from "react";
 import Plot from "react-plotly.js";
 import "../styles/global.css";
+import { BlockMath, InlineMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 // Types fo EM elliposoid step payload
 type EMStepPayload = {
@@ -339,6 +341,46 @@ function renderEmPlot(trace: EMtrace_dict, iter: number, layout: any) {
 );
 }
 
+function renderRawPlot(trace: EMtrace_dict, layout: any) {
+  // raw 3D data lives here
+  const X: number[][] = trace.meta.raw_data || [];
+  if (!X.length) return null;
+
+  const xs = X.map((p) => p[0]);
+  const ys = X.map((p) => p[1]);
+  const zs = X.map((p) => p[2]);
+
+  const data: any[] = [
+    {
+      x: xs,
+      y: ys,
+      z: zs,
+      type: "scatter3d" as const,
+      mode: "markers",
+      name: "Raw data",
+      marker: {
+        size: 3,
+        color: "#64748b", // neutral gray-blue
+        opacity: 0.9,
+      },
+    },
+  ];
+
+  // reuse layout, but we can hide legend for raw view
+  const rawLayout = {
+    ...layout,
+    showlegend: false,
+  };
+
+  return (
+    <Plot
+      data={data}
+      layout={rawLayout}
+      style={{ width: "100%", height: "100%" }}
+      useResizeHandler={true}
+    />
+  );
+}
 
 export default function EM() {
     const [error, setError] = useState<string | null>(null);
@@ -360,6 +402,9 @@ export default function EM() {
     const [iter, setIter] = useState(0);
 
     const [activeTab, setActiveTab] = useState<"viz" | "explain">("viz");
+
+    const [viewMode, setViewMode] = useState<"model" | "raw">("model");
+
 
     const layout = useMemo(
         () => ({
@@ -414,6 +459,9 @@ export default function EM() {
             const json: EMtrace_dict = await res.json();
             console.log("trace from backend:", json);
             setTrace(json);
+
+            setViewMode("model");
+
         } catch (err: any) {
             console.error("error fetching EM trace:", err);
             setError(String(err));
@@ -421,6 +469,8 @@ export default function EM() {
             setLoading(false);
         }
         setIter(0);
+
+
     }
     // whenever slider effect changes
     
@@ -592,6 +642,21 @@ export default function EM() {
             >
               {loading ? "Running EM..." : "Run EM"}
             </button>
+
+            <button
+              type="button"
+              className={`btn btn-secondary ${
+                viewMode === "raw" ? "active" : ""
+              }`}
+              disabled={!trace || loading}
+              onClick={() =>
+                setViewMode((prev) => (prev === "model" ? "raw" : "model"))
+              }
+            >
+              {viewMode === "model" ? "Show Raw Data" : "Show Model View"}
+            </button>
+            
+
           </div>
         </div>
       </aside>
@@ -601,18 +666,20 @@ export default function EM() {
 <section className="visualization-area">
   <div className="tabs">
     <button
+      className={`tab ${activeTab === "explain" ? "active" : ""}`}
+      onClick={() => setActiveTab("explain")}
+    >
+      EM Explanation
+    </button>
+
+    <button
       className={`tab ${activeTab === "viz" ? "active" : ""}`}
       onClick={() => setActiveTab("viz")}
     >
       EM Visualization
     </button>
 
-    <button
-      className={`tab ${activeTab === "explain" ? "active" : ""}`}
-      onClick={() => setActiveTab("explain")}
-    >
-      EM Explanation
-    </button>
+    
   </div>
 
   {/* ---- Visualization tab ---- */}
@@ -656,7 +723,11 @@ export default function EM() {
               </div>
             )}
 
-            {!loading && trace && renderEmPlot(trace, iter, layout)}
+            {!loading && trace && (
+              viewMode === "raw"
+                ? renderRawPlot(trace, layout)
+                : renderEmPlot(trace, iter, layout)
+            )}
           </div>
 
           {/* RIGHT: log-likelihood chart */}
@@ -767,90 +838,106 @@ export default function EM() {
           </p>
 
           <section className="formula-section">
-            <h3>Key EM formulas (Gaussian Mixture Model)</h3>
+  <h3>Key EM formulas (Gaussian Mixture Model)</h3>
 
-            <div className="formula-grid">
-              {/* 1. Posterior / responsibilities (E-step) */}
-              <div className="formula-card">
-                <h4>Posterior / responsibilities (E-step)</h4>
-                <p>
-                  For each data point <code>x<sub>j</sub></code> and component{" "}
-                  <code>C<sub>i</sub></code>, EM computes a “soft label” (responsibility)
-                  that tells us how much component <code>i</code> explains point{" "}
-                  <code>j</code>:
-                </p>
-                <p className="formula">
-                  y<sub>i,j</sub> = P(C<sub>i</sub> | x<sub>j</sub>) ={" "}
-                  <span>
-                    N(x<sub>j</sub> | μ<sub>i</sub>, Σ<sub>i</sub>) π<sub>i</sub>
-                  </span>{" "}
-                  /{" "}
-                  <span>
-                    ∑<sub>k=1</sub><sup>K</sup> N(x<sub>j</sub> | μ<sub>k</sub>, Σ<sub>k</sub>)
-                    π<sub>k</sub>
-                  </span>
-                </p>
-                <p className="formula-note">
-                  Here N(· | μ<sub>i</sub>, Σ<sub>i</sub>) is the Gaussian density for
-                  component <code>i</code>.
-                </p>
-              </div>
+      <div className="formula-grid">
+        {/* 1. Posterior / responsibilities (E-step) */}
+        <div className="formula-card">
+          <h4>Posterior / responsibilities (E-step)</h4>
+          <p>
+            For each data point <code>x<sub>j</sub></code> and component{" "}
+            <code>C<sub>i</sub></code>, EM computes a “soft label” (responsibility)
+            that tells us how much component <code>i</code> explains point{" "}
+            <code>j</code>:
+          </p>
+          <div className="formula">
+            <BlockMath
+              math={String.raw`
+                y_{ij} = P(C_i \mid x_j)
+                = \frac{\mathcal{N}(x_j \mid \mu_i, \Sigma_i)\,\pi_i}
+                      {\sum_{k=1}^{K} \mathcal{N}(x_j \mid \mu_k, \Sigma_k)\,\pi_k}
+              `}
+            />
+          </div>
+          <p className="formula-note">
+            Here <InlineMath math={String.raw`\mathcal{N}(\cdot \mid \mu_i, \Sigma_i)`} /> is
+            the Gaussian density for component <code>i</code>.
+          </p>
+        </div>
 
-              {/* 2. Effective counts and mixture weights (M-step) */}
-              <div className="formula-card">
-                <h4>Effective counts &amp; mixture weights</h4>
-                <p>
-                  The responsibility matrix y<sub>i,j</sub> tells us how many “effective”
-                  points each component sees, and we use that to update the mixture
-                  weights π<sub>i</sub>:
-                </p>
-                <p className="formula">
-                  N<sub>i</sub> = ∑<sub>j=1</sub><sup>N</sup> y<sub>i,j</sub>
-                </p>
-                <p className="formula">
-                  π<sub>i</sub> = N<sub>i</sub> / N
-                </p>
-                <p className="formula-note">
-                  N is the total number of data points; N<sub>i</sub> is the effective
-                  count for component <code>i</code>.
-                </p>
-              </div>
+        {/* 2. Effective counts and mixture weights (M-step) */}
+        <div className="formula-card">
+          <h4>Effective counts &amp; mixture weights</h4>
+          <p>
+            The responsibility matrix y<sub>i,j</sub> tells us how many “effective”
+            points each component sees, and we use that to update the mixture
+            weights π<sub>i</sub>:
+          </p>
+          <div className="formula">
+            <BlockMath
+              math={String.raw`
+                N_i = \sum_{j=1}^{N} y_{ij}
+              `}
+            />
+          </div>
+          <div className="formula">
+            <BlockMath
+              math={String.raw`
+                \pi_i = \frac{N_i}{N}
+              `}
+            />
+          </div>
+          <p className="formula-note">
+            <InlineMath math={String.raw`N`} /> is the total number of data points and{" "}
+            <InlineMath math={String.raw`N_i`} /> is the effective count for component{" "}
+            <code>i</code>.
+          </p>
+        </div>
 
-              {/* 3. Mean update (M-step) */}
-              <div className="formula-card">
-                <h4>Mean update (M-step)</h4>
-                <p>
-                  Each component mean is the responsibility-weighted average of the data
-                  points:
-                </p>
-                <p className="formula">
-                  μ<sub>i</sub> = (1 / N<sub>i</sub>) ∑<sub>j=1</sub><sup>N</sup>{" "}
-                  y<sub>i,j</sub> x<sub>j</sub>
-                </p>
-                <p className="formula-note">
-                  Points with higher responsibility y<sub>i,j</sub> pull the mean μ<sub>i</sub> more
-                  strongly in their direction.
-                </p>
-              </div>
+        {/* 3. Mean update (M-step) */}
+        <div className="formula-card">
+          <h4>Mean update (M-step)</h4>
+          <p>
+            Each component mean is the responsibility-weighted average of the data
+            points:
+          </p>
+          <div className="formula">
+            <BlockMath
+              math={String.raw`
+                \mu_i = \frac{1}{N_i} \sum_{j=1}^{N} y_{ij}\,x_j
+              `}
+            />
+          </div>
+          <p className="formula-note">
+            Points with higher responsibility{" "}
+            <InlineMath math={String.raw`y_{ij}`} /> pull the mean{" "}
+            <InlineMath math={String.raw`\mu_i`} /> more strongly in their direction.
+          </p>
+        </div>
 
-              {/* 4. Covariance update (M-step) */}
-              <div className="formula-card">
-                <h4>Covariance update (M-step)</h4>
-                <p>
-                  The covariance of each component is updated using the responsibility-weighted
-                  scatter of points around the new mean:
-                </p>
-                <p className="formula">
-                  Σ<sub>i</sub> = (1 / N<sub>i</sub>) ∑<sub>j=1</sub><sup>N</sup>{" "}
-                  y<sub>i,j</sub> (x<sub>j</sub> − μ<sub>i</sub>)(x<sub>j</sub> − μ<sub>i</sub>)<sup>T</sup>
-                </p>
-                <p className="formula-note">
-                  In 1D this reduces to the weighted variance; in this demo it&apos;s a 3D
-                  covariance, but the same formula works in any dimension.
-                </p>
-              </div>
-            </div>
-          </section>
+        {/* 4. Covariance update (M-step) */}
+        <div className="formula-card">
+          <h4>Covariance update (M-step)</h4>
+          <p>
+            The covariance of each component is updated using the
+            responsibility-weighted scatter of points around the new mean:
+          </p>
+          <div className="formula">
+            <BlockMath
+              math={String.raw`
+                \Sigma_i
+                = \frac{1}{N_i} \sum_{j=1}^{N}
+                  y_{ij}\,\bigl(x_j - \mu_i\bigr)\bigl(x_j - \mu_i\bigr)^\top
+              `}
+            />
+          </div>
+          <p className="formula-note">
+            In 1D this reduces to the weighted variance; in this demo it is a 3D
+            covariance, but the same formula works in any dimension.
+          </p>
+        </div>
+      </div>
+    </section>
         </div>
 
 
