@@ -55,8 +55,8 @@ function PCA() {
           That is, he retired to early for anyone to see his true potential. <b> But just how good was he? </b>
         </p>
         <p>
-          An obvious first step would be compare his stats with other UFC fighters. Let's take a look at a snippet of a dataset from 
-          <a href="https://www.kaggle.com/datasets/maksbasher/ufc-complete-dataset-all-events-1996-2024/data"> Kaggle</a>.
+          An obvious first step would be compare his stats with other UFC fighters. Let's take a look at a snippet of a
+           dataset from <a href="https://www.kaggle.com/datasets/maksbasher/ufc-complete-dataset-all-events-1996-2024/data">Kaggle</a>.
         </p>
 
         <ImageContainer>
@@ -360,14 +360,13 @@ function PCA() {
           We'll show you how to pinpoint one mathematically.
         </p>
         <p>
-          The formula for distance to the principal component is:
-           <InlineMath math={String.raw`\mathbf{d} = \tilde{\mathbf{x}} - \text{Proj}_{\mathbf{p}}\tilde{\mathbf{x}} = \tilde{\mathbf{x}} - \frac{\mathbf{p} \cdot \tilde{\mathbf{x}}}{\|\mathbf{p}\|^2}\mathbf{p}`} />
+          The formula for distance to the principal component is: <InlineMath math={String.raw`\mathbf{d} = \tilde{\mathbf{x}} - \text{Proj}_{\mathbf{p}}\tilde{\mathbf{x}} = \tilde{\mathbf{x}} - \frac{\mathbf{p} \cdot \tilde{\mathbf{x}}}{\|\mathbf{p}\|^2}\mathbf{p}`} />
         </p>
         <p>Where:</p>
         <ul>
           <li><InlineMath math={String.raw`\mathbf{d}`} /> is the distance to the principal component</li>
-          <li><InlineMath math={String.raw`\tilde{\mathbf{x}} = \mathbf{x} - \boldsymbol{\mu}`} />
-           is the standardized data point <i>after</i> x has been divided by the standard deviation</li>
+          <li><InlineMath math={String.raw`\tilde{\mathbf{x}} = \mathbf{x} - \boldsymbol{\mu}`} /> is 
+           the standardized data point <i>after</i> x has been divided by the standard deviation</li>
           <li><InlineMath math={String.raw`\mathbf{p}`} /> is the principal component vector</li>
         </ul>
         <p>
@@ -548,7 +547,7 @@ function PCA() {
 
       <div className ="main-text">
         The right-hand equation is actually very well known; it&apos;s related to a
-        special case of the <em>Rayleigh Quotient</em>, and it&apos;s known that the{" "}
+        special case of the <a href="https://ecroot.math.gatech.edu/notes_linear.pdf">Rayleigh Quotient</a>., and it&apos;s known that the{" "}
         <strong>eigenvectors with the largest eigenvalues of </strong>
         <InlineMath math={String.raw`\mathbf{S}`} /> maximize this value (i.e., the
         “biggest” eigenvectors).
@@ -634,6 +633,17 @@ function PCA() {
       </div>
 
       <DisplayPCA />
+
+      <h2 className="section-title">Bibliography</h2>
+      <div className = "main-text">
+        <ul>
+          <li>“Flashy Style a Product of Practice for Must-See Magomedsharipov.” UFC, October 3, 2018.  <a href="https://www.ufc.com.br/news/flashy-style-product-practice-must-see-magomedsharipov">https://www.ufc.com.br/news/flashy-style-product-practice-must-see-magomedsharipov</a>. </li>
+          <li>MaksBasher. “UFC Complete Dataset (All Events 1996-2024).” Kaggle, March 28, 2024. <a href="https://www.kaggle.com/datasets/maksbasher/ufc-complete-dataset-all-events-1996-2024/data">https://www.kaggle.com/datasets/maksbasher/ufc-complete-dataset-all-events-1996-2024/data</a>. </li>
+          <li>The rayleigh principle for finding eigenvalues April 19, 2005 1 introduction. Accessed December 1, 2025.<a href="https://ecroot.math.gatech.edu/notes_linear.pdf">https://ecroot.math.gatech.edu/notes_linear.pdf</a>.</li>
+          <li>“UFC Moscow: Zabit Magomedsharipov Fades in Third, but Hangs on to Win Decision over Calvin Kattar.” Yahoo! Sports. Accessed November 30, 2025. <a href="https://sports.yahoo.com/zabit-magomedsharipov-fades-in-third-but-hangs-on-to-win-decision-over-calvin-kattar-in-moscow-224742903">https://sports.yahoo.com/zabit-magomedsharipov-fades-in-third-but-hangs-on-to-win-decision-over-calvin-kattar-in-moscow-224742903</a>. </li>
+        </ul>
+      </div>
+      
     </div>
   );
 }

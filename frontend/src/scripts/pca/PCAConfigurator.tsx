@@ -152,7 +152,7 @@ export default function PCAConfigurator() {
         <h2 className="figure-title">Data Configurator</h2>
 
         <div className="control-group">
-          <label>Num Sets: {state.numSets}</label>
+          <label>Cluster: {state.numSets}</label>
           <input
             type="range"
             min={1}
@@ -165,7 +165,7 @@ export default function PCAConfigurator() {
         </div>
 
         <div className="control-group">
-          <label>Num Points per Set: {state.numPoints}</label>
+          <label>Num Points per Cluster: {state.numPoints}</label>
           <input
             type="range"
             min={50}
@@ -217,7 +217,7 @@ export default function PCAConfigurator() {
         {/* Means/Covariance editor */}
         {state.means.map((meanRow, si) => (
           <div key={si} className="pca-set-block">
-            <h4>Set {si + 1}</h4>
+            <h4>Cluster {si + 1}</h4>
 
             <label>Mean:</label>
             <div className="pca-input-row">
