@@ -91,3 +91,54 @@ html {
   outline-offset: 2px;
 }
 
+/* Header section  for em plots */
+.em-plot-row {
+  display: grid;               /* or flex */
+  grid-template-columns: 2fr 1.3fr;  /* left bigger than right */
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.plot-container {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.em-plot-3d,
+.em-loglikelihood-chart {
+  height: 500px;              /* or whatever height you want */
+}
+
+.explanation-content {
+  font-size: 1.05rem;   /* increase all text inside */
+  line-height: 1.6;
+}
+
+.formula-section {
+  margin-top: 1.5rem;
+}
+
+.formula-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.formula-card {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: #f9fafb;
+}
+
+.formula {
+  margin-top: 0.35rem;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.formula-note {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}

@@ -541,3 +541,25 @@
     transform: translateY(0);
   }
 }
+
+.em-loglikelihood-chart {
+  flex: 2 1 0;
+  min-width: 0;
+  height: 500px;
+}
+
+.explanation-content p {
+  margin-bottom: 0.75rem; /* adjust spacing here */
+}
+
+.plot-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+  padding: 0.5rem;
+}
+

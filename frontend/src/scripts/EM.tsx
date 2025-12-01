@@ -2,7 +2,6 @@ import TestAPI from "../TestAPI";
 import * as d3 from "d3";
 import { useEffect, useState, useRef, useMemo } from "react";
 import Plot from "react-plotly.js";
-import "./EM.css";
 import "../styles/components.css";
 import "../styles/globals.css";
 
@@ -49,113 +48,149 @@ type Scales = {
   yScale: d3.ScaleLinear<number, number>;
 };
 
-// LogLikelihoodChart component to display log-likelihood over iterations
 function LogLikelihoodChart({ values, currentIter }: LogLikelihoodChartProps) {
-    const svgRef = useRef<SVGSVGElement | null>(null);
-    const markerRef = useRef<SVGCircleElement | null>(null);
-    const vlineRef = useRef<SVGLineElement | null>(null);
-    const [scales, setScales] = useState<Scales | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const markerRef = useRef<SVGCircleElement | null>(null);
+  const vlineRef = useRef<SVGLineElement | null>(null);
+  const [scales, setScales] = useState<Scales | null>(null);
 
-    // 1) Build axes + full line once when values change
-    useEffect(() => {
-        if (!svgRef.current || values.length === 0) return;
+  // 1) Build axes + full line once when values change
+  useEffect(() => {
+    if (!svgRef.current || values.length === 0) return;
 
-        const svg = d3.select(svgRef.current);
+    const svg = d3.select(svgRef.current);
 
-        const width = 400;
-        const height = 220;
-        const margin = { top: 20, right: 20, bottom: 30, left: 50 };
-        const innerWidth = width - margin.left - margin.right;
-        const innerHeight = height - margin.top - margin.bottom;
+    const width = 400;
+    const height = 220;
+    const margin = { top: 20, right: 20, bottom: 40, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
 
-        svg.selectAll("*").remove();
+    svg.selectAll("*").remove();
 
-        const g = svg
-        .attr("viewBox", `0 0 ${width} ${height}`)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
+    const g = svg
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        const xScale = d3
-        .scaleLinear()
-        .domain([0, values.length - 1])
-        .range([0, innerWidth]);
+    // subtle background panel
+    g.append("rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", innerWidth)
+      .attr("height", innerHeight)
+      .attr("fill", "#f9fafb");
 
-        const [yMin, yMax] = d3.extent(values) as [number, number];
-        const yScale = d3
-        .scaleLinear()
-        .domain([yMin, yMax])
-        .nice()
-        .range([innerHeight, 0]);
+    const xScale = d3
+      .scaleLinear()
+      .domain([0, values.length - 1])
+      .range([0, innerWidth]);
 
-        setScales({ xScale, yScale });
+    const [yMin, yMax] = d3.extent(values) as [number, number];
+    const yScale = d3
+      .scaleLinear()
+      .domain([yMin, yMax])
+      .nice()
+      .range([innerHeight, 0]);
 
-        const line = d3
-        .line<number>()
-        .x((_, i) => xScale(i))
-        .y((d) => yScale(d));
+    setScales({ xScale, yScale });
 
-        // main blue log-likelihood curve
-        g.append("path")
-        .datum(values)
-        .attr("fill", "none")
-        .attr("stroke", "#38bdf8")
-        .attr("stroke-width", 2)
-        .attr("d", line);
+    const line = d3
+      .line<number>()
+      .x((_, i) => xScale(i))
+      .y((d) => yScale(d));
 
-        // axes
-        g.append("g")
-        .attr("transform", `translate(0,${innerHeight})`)
-        .call(d3.axisBottom(xScale).ticks(Math.min(values.length - 1, 10)));
+    // main blue log-likelihood curve
+    g.append("path")
+      .datum(values)
+      .attr("fill", "none")
+      .attr("stroke", "#38bdf8")
+      .attr("stroke-width", 2)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("d", line);
 
-        g.append("g").call(d3.axisLeft(yScale).ticks(5));
+    // axes
+    const xAxis = g
+      .append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale).ticks(Math.min(values.length - 1, 10)));
 
-        // red marker
-        const marker = g
-        .append("circle")
-        .attr("r", 4)
-        .attr("fill", "red");
+    const yAxis = g.append("g").call(d3.axisLeft(yScale).ticks(5));
 
-        markerRef.current = marker.node() as SVGCircleElement;
+    // axis labels
+    g.append("text")
+      .attr("class", "axis-label")
+      .attr("x", innerWidth / 2)
+      .attr("y", innerHeight + margin.bottom - 10)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#4b5563")
+      .style("font-size", 10)
+      .text("Iteration");
 
-        // red vertical line
-        const vline = g
-        .append("line")
-        .attr("stroke", "red")
-        .attr("stroke-dasharray", "4,2")
-        .attr("stroke-width", 1);
+    g.append("text")
+      .attr("class", "axis-label")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -innerHeight / 2)
+      .attr("y", -margin.left + 15)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#4b5563")
+      .style("font-size", 10)
+      .text("Log-likelihood");
 
-        vlineRef.current = vline.node() as SVGLineElement;
-    }, [values]);
+    // slightly lighten axis lines/ticks
+    xAxis.selectAll("path, line").attr("stroke", "#d1d5db");
+    yAxis.selectAll("path, line").attr("stroke", "#d1d5db");
 
-    // 2) Move the red marker + line when currentIter changes
-    useEffect(() => {
-        if (!scales || values.length === 0) return;
+    // red marker
+    const marker = g
+      .append("circle")
+      .attr("r", 4)
+      .attr("fill", "red");
 
-        const { xScale, yScale } = scales;
-        const idx = Math.max(0, Math.min(currentIter, values.length - 1));
-        const x = xScale(idx);
-        const y = yScale(values[idx]);
+    markerRef.current = marker.node() as SVGCircleElement;
 
-        if (markerRef.current) {
-        d3.select(markerRef.current).attr("cx", x).attr("cy", y);
-        }
+    // red vertical line
+    const vline = g
+      .append("line")
+      .attr("stroke", "red")
+      .attr("stroke-dasharray", "4,2")
+      .attr("stroke-width", 1);
 
-        if (vlineRef.current) {
-        d3.select(vlineRef.current)
-            .attr("x1", x)
-            .attr("x2", x)
-            .attr("y1", yScale.range()[1]) // top
-            .attr("y2", yScale.range()[0]); // bottom
-        }
-    }, [currentIter, values, scales]);
+    vlineRef.current = vline.node() as SVGLineElement;
+  }, [values]);
 
-    return (
-        <svg
-        ref={svgRef}
-        style={{ width: "100%", height: "100%", overflow: "visible" }}
-        />
-    );
+  // 2) Move the red marker + line when currentIter changes
+  useEffect(() => {
+    if (!scales || values.length === 0) return;
+
+    const { xScale, yScale } = scales;
+    const idx = Math.max(0, Math.min(currentIter, values.length - 1));
+    const x = xScale(idx);
+    const y = yScale(values[idx]);
+
+    if (markerRef.current) {
+      d3.select(markerRef.current).attr("cx", x).attr("cy", y);
     }
+
+    if (vlineRef.current) {
+      d3.select(vlineRef.current)
+        .attr("x1", x)
+        .attr("x2", x)
+        .attr("y1", yScale.range()[1]) // top
+        .attr("y2", yScale.range()[0]); // bottom
+    }
+  }, [currentIter, values, scales]);
+
+  return (
+    <svg
+      ref={svgRef}
+      style={{ width: "100%", height: "100%", overflow: "visible" }}
+    />
+  );
+}
+
+
 
 
 // helper function to find nearest mean index for a point
@@ -324,6 +359,8 @@ export default function EM() {
     const [C, setC] = useState(4); 
     const [numIters, setNumIters] = useState(20);
     const [iter, setIter] = useState(0);
+
+    const [activeTab, setActiveTab] = useState<"viz" | "explain">("viz");
 
     const layout = useMemo(
         () => ({
@@ -561,61 +598,270 @@ export default function EM() {
         </div>
       </aside>
 
-      {/* RIGHT: main visualization area */}
-      <section className="visualization-area">
-        <div className="tabs">
-          <button className="tab active">EM Visualization</button>
+      
+        {/* RIGHT: main visualization area */}
+<section className="visualization-area">
+  <div className="tabs">
+    <button
+      className={`tab ${activeTab === "viz" ? "active" : ""}`}
+      onClick={() => setActiveTab("viz")}
+    >
+      EM Visualization
+    </button>
+
+    <button
+      className={`tab ${activeTab === "explain" ? "active" : ""}`}
+      onClick={() => setActiveTab("explain")}
+    >
+      EM Explanation
+    </button>
+  </div>
+
+  {/* ---- Visualization tab ---- */}
+  {activeTab === "viz" && (
+  <>
+        {/* Iteration controls – you can hide this when !trace if you prefer */}
+        <div className="iteration-controls">
+          <div className="iteration-info">
+            <div>
+              <div className="plot-title">Iteration</div>
+              <div>
+                Step {iter} of {trace ? trace.steps.length - 2 : 0}
+              </div>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={trace ? trace.steps.length - 2 : 0}
+              value={iter}
+              onChange={(e) => setIter(Number(e.target.value))}
+              className="iteration-slider"
+              disabled={!trace || loading}
+            />
+          </div>
         </div>
 
-        {loading && <div className="loading">Running EM on the server…</div>}
+        <div className="em-plot-row">
+          {/* LEFT: main Plotly / EM plot */}
+          <div className="plot-container em-plot-3d">
+            <div className="plot-title">Cluster assignments &amp; Gaussians</div>
 
-        {!loading && !trace && (
-          <div className="loading">
-            No trace yet. Adjust parameters and click “Run EM”.
+            {loading && (
+              <div className="plot-placeholder">
+                Running EM on the server…
+              </div>
+            )}
+
+            {!loading && !trace && (
+              <div className="plot-placeholder">
+                No trace yet. Adjust parameters and click <strong>“Run EM”</strong>.
+              </div>
+            )}
+
+            {!loading && trace && renderEmPlot(trace, iter, layout)}
           </div>
-        )}
 
-        {!loading && trace && (
-          <>
-            {/* iteration slider card styled like K-Means */}
-            <div className="iteration-controls">
-              <div className="iteration-info">
-                <div>
-                  <div className="plot-title">Iteration</div>
-                  <div>
-                    Step {iter} of {trace.steps.length - 2}
-                  </div>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={trace.steps.length - 2}
-                  value={iter}
-                  onChange={(e) => setIter(Number(e.target.value))}
-                  className="iteration-slider"
-                />
+          {/* RIGHT: log-likelihood chart */}
+          <div className="plot-container em-loglikelihood-chart">
+            <div className="plot-title">Log-likelihood over iterations</div>
+
+            {loading && (
+              <div className="plot-placeholder">
+                Log-likelihood will appear here once EM finishes.
+              </div>
+            )}
+
+            {!loading && !trace && (
+              <div className="plot-placeholder">
+                Run EM to see how the log-likelihood improves over iterations.
+              </div>
+            )}
+
+            {!loading && trace && (
+              <LogLikelihoodChart
+                values={trace.log_likelihoods}
+                currentIter={iter}
+              />
+            )}
+          </div>
+        </div>
+      </>
+    )}
+
+  {/* ---- Explanation tab ---- */}
+  {activeTab === "explain" && (
+    <div className="plot-container">
+      <div className="plot-title">How the EM algorithm works</div>
+        <div className="explanation-content">
+          <p>
+            Welcome to Expectation Maximization (EM) for Gaussian Mixture Models (GMMs)! This interactive demo walks you through the
+            EM algorithm step-by-step as it fits a mixture of Gaussians to 3D data.
+          </p>
+
+          <p>
+            First, we set up the data. In the DATASET PARAMETERS panel you choose the{" "}
+            <em>true</em> number of Gaussian components we use to generate points, how
+            many points we sample, and how spread out or tight each blob is. Each
+            component is a Gaussian with its own mean and covariance. When you create these blobs,
+            you're just basically picking centers and drawing data points around them in 3D space.
+          </p>
+
+          <p>
+            Then, in the ALGORITHM PARAMETERS panel, you tell the algorithm how many components it should
+            try to fit. This is the model&apos;s number of components, and it is a{" "}
+            <strong>hyperparameter</strong>: in real data we do not know the true
+            number of clusters, so we have to choose it and compare different values.
+            In this demo, the “true” number (used for data generation) and the “model”
+            number (used by EM) can match or be different on purpose. You also set how many iterations of EM to run,
+            you usually want to run enough iterations for the parameters of the algorithm to converge, hence the log liklihood plot.
+          </p>
+
+          <p>
+            Once all of the data parameters are set, click Run EM. This will generate a 3d plot of your synthesized 
+            data, an iteration slider, and a logliklihood chart. Each iteration has two
+            stages, and your <code>n_steps</code> / iteration slider lets you pause the
+            loop and step through these updates slowly:
+          </p>
+
+          <ol>
+            <li>
+              <strong>Expectation step (E-step):</strong> Given the current guesses for
+              the means, covariances, and mixture weights, EM goes through every point
+              and computes the probability that it came from each component. These are
+              the “soft labels” or responsibilities. Instead of saying “this point is
+              cluster 1,” we say “this point is 70% cluster 1, 25% cluster 2, 5%
+              cluster 3.” In the visualization, you can think of the colors as showing
+              these soft assignments.
+            </li>
+            <li>
+              <strong>Maximization step (M-step):</strong> Using those soft labels, EM
+              updates the model. Each component gets a new mean (a weighted average of
+              the points assigned to it), a new covariance (a weighted covariance of
+              those points), and a new mixture weight (how much of the dataset that
+              component explains). After this update, the ellipsoids in the plot move
+              and reshape, and then we go back to the E-step with these new parameters.
+            </li>
+          </ol>
+
+          <p>
+            This back-and-forth between E and M is iterative: with each step, the soft
+            labels and the parameters influence each other. As you drag the iteration
+            slider, you are literally watching EM alternate between “given the model,
+            what are the labels?” and “given the labels, what is the best model?”
+          </p>
+
+          <p>
+            At every iteration we also compute the <strong>log-likelihood</strong>,
+            which is the log of the probability that the current model would generate
+            the entire dataset you see. EM is designed so that this log-likelihood does
+            not go down from one iteration to the next, so the curve in the plot should
+            climb and then flatten. When the curve has basically stopped increasing,
+            the parameter updates have become tiny, and we say the algorithm has
+            converged for this choice of hyperparameters.
+          </p>
+
+          <p>
+            Here we show everything in 3D so you can see blobs and ellipsoids in space,
+            but the exact same EM + GMM logic works for 2D data and for higher
+            dimensions that we cannot easily draw. Only the picture changes; the
+            underlying steps of generating data, choosing a model, taking E-steps and
+            M-steps, and tracking log-likelihood are the same.
+          </p>
+
+          <section className="formula-section">
+            <h3>Key EM formulas (Gaussian Mixture Model)</h3>
+
+            <div className="formula-grid">
+              {/* 1. Posterior / responsibilities (E-step) */}
+              <div className="formula-card">
+                <h4>Posterior / responsibilities (E-step)</h4>
+                <p>
+                  For each data point <code>x<sub>j</sub></code> and component{" "}
+                  <code>C<sub>i</sub></code>, EM computes a “soft label” (responsibility)
+                  that tells us how much component <code>i</code> explains point{" "}
+                  <code>j</code>:
+                </p>
+                <p className="formula">
+                  y<sub>i,j</sub> = P(C<sub>i</sub> | x<sub>j</sub>) ={" "}
+                  <span>
+                    N(x<sub>j</sub> | μ<sub>i</sub>, Σ<sub>i</sub>) π<sub>i</sub>
+                  </span>{" "}
+                  /{" "}
+                  <span>
+                    ∑<sub>k=1</sub><sup>K</sup> N(x<sub>j</sub> | μ<sub>k</sub>, Σ<sub>k</sub>)
+                    π<sub>k</sub>
+                  </span>
+                </p>
+                <p className="formula-note">
+                  Here N(· | μ<sub>i</sub>, Σ<sub>i</sub>) is the Gaussian density for
+                  component <code>i</code>.
+                </p>
+              </div>
+
+              {/* 2. Effective counts and mixture weights (M-step) */}
+              <div className="formula-card">
+                <h4>Effective counts &amp; mixture weights</h4>
+                <p>
+                  The responsibility matrix y<sub>i,j</sub> tells us how many “effective”
+                  points each component sees, and we use that to update the mixture
+                  weights π<sub>i</sub>:
+                </p>
+                <p className="formula">
+                  N<sub>i</sub> = ∑<sub>j=1</sub><sup>N</sup> y<sub>i,j</sub>
+                </p>
+                <p className="formula">
+                  π<sub>i</sub> = N<sub>i</sub> / N
+                </p>
+                <p className="formula-note">
+                  N is the total number of data points; N<sub>i</sub> is the effective
+                  count for component <code>i</code>.
+                </p>
+              </div>
+
+              {/* 3. Mean update (M-step) */}
+              <div className="formula-card">
+                <h4>Mean update (M-step)</h4>
+                <p>
+                  Each component mean is the responsibility-weighted average of the data
+                  points:
+                </p>
+                <p className="formula">
+                  μ<sub>i</sub> = (1 / N<sub>i</sub>) ∑<sub>j=1</sub><sup>N</sup>{" "}
+                  y<sub>i,j</sub> x<sub>j</sub>
+                </p>
+                <p className="formula-note">
+                  Points with higher responsibility y<sub>i,j</sub> pull the mean μ<sub>i</sub> more
+                  strongly in their direction.
+                </p>
+              </div>
+
+              {/* 4. Covariance update (M-step) */}
+              <div className="formula-card">
+                <h4>Covariance update (M-step)</h4>
+                <p>
+                  The covariance of each component is updated using the responsibility-weighted
+                  scatter of points around the new mean:
+                </p>
+                <p className="formula">
+                  Σ<sub>i</sub> = (1 / N<sub>i</sub>) ∑<sub>j=1</sub><sup>N</sup>{" "}
+                  y<sub>i,j</sub> (x<sub>j</sub> − μ<sub>i</sub>)(x<sub>j</sub> − μ<sub>i</sub>)<sup>T</sup>
+                </p>
+                <p className="formula-note">
+                  In 1D this reduces to the weighted variance; in this demo it&apos;s a 3D
+                  covariance, but the same formula works in any dimension.
+                </p>
               </div>
             </div>
+          </section>
+        </div>
 
-            {/* 3D plot + log-likelihood row (uses EM-specific classes) */}
-            <div className="em-plot-row">
-              <div className="plot-container em-plot-3d">
-                <div className="plot-title">
-                  Cluster assignments & Gaussians
-                </div>
-                {renderEmPlot(trace, iter, layout)}
-              </div>
 
-              <div className="plot-container em-loglikelihood-chart">
-                <div className="plot-title">Log-likelihood over iterations</div>
-                <LogLikelihoodChart
-                  values={trace.log_likelihoods}
-                  currentIter={iter}
-                />
-              </div>
-            </div>
-          </>
-        )}
+
+            
+      </div>
+      )}
+      
+
       </section>
     </div>
   </section>
