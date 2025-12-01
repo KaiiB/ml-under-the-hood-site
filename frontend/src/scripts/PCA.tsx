@@ -9,7 +9,7 @@ import DataFrameTable from "./pca/DataFrameTable";
 function PCA() {
   return (
     <div>
-      <h1> How PCA Works </h1>
+      <h1 className="title">How PCA Works</h1>
 
       <h2 className="section-title">PCA: Why Do We Need It?</h2>
 
@@ -428,7 +428,7 @@ function PCA() {
         </p>
       </div>
 
-      <details>
+      <details className="indented-details">
         <summary
           style={{
             fontSize: "1.3em",
@@ -440,29 +440,29 @@ function PCA() {
           "Find principal component <InlineMath math={String.raw`\mathbf{p}`} /> that minimizes the distance between points <InlineMath math={String.raw`\tilde{\mathbf{x}}`} /> and principal component <InlineMath math={String.raw`\mathbf{p}`} />"
         </summary>
 
-        <div style={{ marginLeft: "10px" }} className="main-text">
+        <div className="main-text">
           <BlockMath math={String.raw`\begin{aligned}
-          \min_{\mathbf{p}} \sum_{i} \lVert \mathbf{d} \rVert^2 
-          &= \min_{\mathbf{p}} \sum_{i} \lVert \tilde{\mathbf{x}}_{i} - \mathrm{Proj}_{\mathbf{p}} \tilde{\mathbf{x}}_{i} \rVert^2 \\
-          &= \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
-          \frac{\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}}{\lVert \mathbf{p} \rVert^2} \mathbf{p} \right\rVert^2 \\ 
-          &= \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
-          (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p} \right\rVert^2 
-          \quad \text{Remember that we defined } \lVert \mathbf{p} \rVert^2 = 1
+            \min_{\mathbf{p}} \sum_{i} \lVert \mathbf{d} \rVert^2 
+            &= \min_{\mathbf{p}} \sum_{i} \lVert \tilde{\mathbf{x}}_{i} - \mathrm{Proj}_{\mathbf{p}} \tilde{\mathbf{x}}_{i} \rVert^2 \\
+            &= \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
+            \frac{\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}}{\lVert \mathbf{p} \rVert^2} \mathbf{p} \right\rVert^2 \\ 
+            &= \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
+            (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p} \right\rVert^2 
+            \quad \text{Remember that we defined } \lVert \mathbf{p} \rVert^2 = 1
           \end{aligned}`} />
 
-          <p><em>Note 1.</em> We use norm squared (i.e., "un-root it") instead of norm because:</p>
+          <p><em>Note 1.</em> We use norm squared (“un-root it”) because:</p>
           <ul>
             <li>It makes our math easier</li>
             <li>It's easier to compute</li>
-            <li>It has no overall effect on our solution</li>
+            <li>It has no effect on the final solution</li>
           </ul>
 
-          <p><em>Note 2.</em> On line 4, because we defined principal component <strong>p</strong> to be a unit vector.</p>
+          <p><em>Note 2.</em> On line 4, we used the fact that the principal component <strong>p</strong> is a unit vector.</p>
         </div>
       </details>
 
-      <details>
+      <details className="indented-details">
         <summary
           style={{
             fontSize: "1.3em",
@@ -474,20 +474,18 @@ function PCA() {
           Some algebra...
         </summary>
 
-        <div style={{ marginLeft: "10px" }} className="main-text">
+        <div className="main-text">
           <BlockMath math={String.raw`\begin{aligned}
-      \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
-      (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p} \right\rVert^2 
-      &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - 2( (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p})\tilde{\mathbf{x}}_{i} + ((\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p})^2) \quad \text{just expanding the square.} \\ 
-      &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - 2(\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})(\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) + (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2\mathbf{p}^2) 
-      \quad \text{Let's not forget that } \mathbf{p}^2 = \mathbf{p} \cdot \mathbf{p} = \|\mathbf{p}\|^2 = 1^2 = 1\\
-      &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - 2(\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2 + (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2) \\
-      &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2)
-      \end{aligned}`} />
+            \min_{\mathbf{p}} \sum_{i} \left\lVert \tilde{\mathbf{x}}_{i} - 
+            (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p} \right\rVert^2 
+            &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - 2( (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p})\tilde{\mathbf{x}}_{i} + ((\mathbf{p} \cdot \tilde{\mathbf{x}}_{i}) \mathbf{p})^2) \\
+            &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - 2(\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2 + (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2) \\
+            &= \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2)
+          \end{aligned}`} />
         </div>
       </details>
 
-      <details>
+      <details className="indented-details">
         <summary
           style={{
             fontSize: "1.3em",
@@ -499,59 +497,23 @@ function PCA() {
           Some more algebra...
         </summary>
 
-        <div style={{ marginLeft: "10px" }} className="main-text">
+        <div className="main-text">
           <BlockMath math={String.raw`\begin{aligned}
-      \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2)
-      &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2
-      \quad \text{Because } \tilde{\mathbf{x}}^2 \text{ is a constant} \\
-      &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i})^\text{T} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}) 
-      \quad \text{Remembering that } \mathbf{p} \cdot \tilde{\mathbf{x}}_{i} = \mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i} \\
-      &= \max_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p}) (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}) \\
-      &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}) (\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p})
-      \quad \text{Scalar commutativity; because } \mathbf{p}^\text{T} \tilde{\mathbf{x}} \text{ is a dot product which produces a scalar} \\
-      &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p})
-      \end{aligned}`} />
+            \min_{\mathbf{p}} \sum_{i} (\tilde{\mathbf{x}}_{i}^2 - (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2)
+            &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p} \cdot \tilde{\mathbf{x}}_{i})^2
+            \quad \text{because the first term is constant} \\
+            &= \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i})^\text{T} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i})
+          \end{aligned}`} />
 
-          <p><em>Note 1.</em> If you're confused on on line 1 think about it like this:</p>
+          <p><em>Note 1.</em> If line 1 seems confusing, think of minimizing <InlineMath math={String.raw`1 - t`} />.</p>
           <ul>
-            <li>You want to minimize <InlineMath math={String.raw`1-t`} /></li>
-            <li>As <InlineMath math={String.raw`t`} /> gets bigger, <InlineMath math={String.raw`1-t`} /> gets smaller</li>
-            <li>So you can just minimize <InlineMath math={String.raw`t`} /></li>
+            <li>As <InlineMath math={String.raw`t`} /> increases, <InlineMath math={String.raw`1 - t`} /> decreases</li>
+            <li>So maximizing <InlineMath math={String.raw`t`} /> is the same problem</li>
           </ul>
-
         </div>
       </details>
 
-      <div className="main-text">
-        <p>We get to something like this:</p>
-
-        <BlockMath math={String.raw`\begin{aligned}
-      \min_{\mathbf{p}} \sum_{i} \lVert \mathbf{d} \rVert^2 
-      = \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p})
-      \end{aligned}`} />
-
-        <p>Remember that in statistics, the covariance matrix is defined as:</p>
-
-        <BlockMath math={String.raw`\begin{aligned}
-      \mathbf{S} = \frac{1}{N}\sum_{i}(\mathbf{x}_{i} - \boldsymbol{\mu})(\mathbf{x}_{i} - \boldsymbol{\mu})^\text{T}
-      \end{aligned}`} />
-
-        <p>
-          Though this is just for convenience, calculating the covariance matrix is more informative and mentally less stressful than just 
-          plugging and chugging into whatever formula we had up there.
-          More importantly, <b>the covariance matrix has some interesting geometric properties</b> which we'll touch on later.
-        </p>
-
-        <p>
-          Remember also that we defined <InlineMath math={String.raw`\tilde{\mathbf{x}} = \mathbf{x} - \boldsymbol{\mu}`} />. Putting this all together:
-        </p>
-
-        <BlockMath math={String.raw`\begin{aligned}
-      \mathbf{S} = \frac{1}{N}\sum_{i} \tilde{\mathbf{x}}_{i} \tilde{\mathbf{x}}_{i}^\text{T}
-      \end{aligned}`} />
-      </div>
-
-      <details>
+      <details className="indented-details">
         <summary
           style={{
             fontSize: "1.3em",
@@ -563,17 +525,16 @@ function PCA() {
           Even more algebra...
         </summary>
 
-        <div style={{ marginLeft: "10px" }} className="main-text">
+        <div className="main-text">
           <BlockMath math={String.raw`\begin{aligned}
-      \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p}) 
-      &= \max_{\mathbf{p}} \mathbf{p}^\text{T} \sum_{i}(\tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T}) \mathbf{p}
-      \quad \mathbf{p} \text{ is not indexed by } i \text{, so we can move it to the outside.} \\ 
-      &= \max_{\mathbf{p}} \mathbf{p}^\text{T} N\mathbf{S} \mathbf{p} \\ 
-      &= \max_{\mathbf{p}} \mathbf{p}^\text{T} \mathbf{S} \mathbf{p}
-      \quad N \text{ is a constant, and so we just need } \mathbf{p}^\text{T} \mathbf{S} \mathbf{p} \text{ to hit the maximum.}
-      \end{aligned}`} />
+            \max_{\mathbf{p}} \sum_{i} (\mathbf{p}^\text{T} \tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T} \mathbf{p})
+            &= \max_{\mathbf{p}} \mathbf{p}^\text{T} \sum_{i}(\tilde{\mathbf{x}}_{i}\tilde{\mathbf{x}}_{i}^\text{T}) \mathbf{p} \\
+            &= \max_{\mathbf{p}} \mathbf{p}^\text{T} N\mathbf{S} \mathbf{p} \\
+            &= \max_{\mathbf{p}} \mathbf{p}^\text{T} \mathbf{S} \mathbf{p}
+          \end{aligned}`} />
         </div>
       </details>
+
 
       <div className="main-text">
         <p>We (finally) end here:</p>
