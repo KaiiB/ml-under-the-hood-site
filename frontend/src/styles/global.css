@@ -278,17 +278,16 @@ html {
 
 /* -------------------- PCA specific (from ryo_components.css) -------------------- */
 .title {margin-left: 1em; font-size: 3rem; font-weight: 700; line-height: 1.2; letter-spacing: normal; margin-bottom: 8px; color: var(--text-primary); padding: var(--spacing-lg); font-family: inherit;}
-.main-text {margin-left: 2em; font-size: 1.25rem; font-weight: 350; line-height: 1.6; letter-spacing: normal; margin-bottom: 1rem; color: var(--text-primary); padding: var(--spacing-lg); box-sizing: border-box; }
+.main-text {margin-left: 2em; font-size: 1.25rem; font-weight: 350; line-height: 1.6; letter-spacing: normal; color: var(--text-primary); padding: var(--spacing-lg); box-sizing: border-box; }
 .main-text blockquote {margin-left: 2em; border-left: 4px solid #ccc; padding-left: 24px; margin: 16px 0; font-style: italic; color: #000000; }
 .section-title {margin-left: 1.5em; font-size: 1.9rem; font-weight: 700; line-height: 1.2; letter-spacing: normal; margin-bottom: 8px; color: var(--text-primary); padding: var(--spacing-lg); font-family: inherit;}
 .figure-title {font-size: 1.6rem; font-weight: 700; line-height: 1.2; letter-spacing: normal; margin-bottom: 8px; text-align: center; color: var(--text-primary); font-family: inherit; }
 .pca-container { width: 100%; gap: 32px; max-width: 100%; margin: 0 auto; display: flex; padding: var(--spacing-xl); box-sizing: border-box; flex-wrap: wrap; }
 .pca-sidebar { width: 100%; max-width: 400px; max-height: 100vh; overflow-y: auto; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-right: var(--spacing-xl); padding: var(--spacing-md); box-shadow: var(--shadow-sm); flex-shrink: 0; }
 .pca-main { flex: 1; display: flex; justify-content: center; align-items: center; padding: var(--spacing-lg); border: 1px solid var(--border-color); border-radius: var(--radius-md); background-color: var(--bg-primary); box-shadow: var(--shadow-sm); box-sizing: border-box; max-width: 100%; }
-.visualizer-card { width: 100%; max-width: 90vw; margin-left: auto; margin-right: auto; margin-bottom: var(--spacing-sm); padding: 24px; background: var(--bg-primary); border-radius: var(--radius-2xl); box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); box-sizing: border-box; }
 .container {width: 100%; max-width: 1920px; margin: 0 auto; padding: 48px 0; box-sizing: border-box;}
-.visualizer-container {width: 100%; display: flex; justify-content: center; align-items: flex-start; margin: 0 auto; padding: 0; box-sizing: border-box;}
-.visualizer-card {width: 1200px; max-width: 90vw; margin-left: auto; margin-right: auto; margin-bottom: var(--spacing-sm); padding: 24px; background: var(--bg-primary); border-radius: var(--radius-2xl); box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); box-sizing: border-box;}
+.visualizer-container {width: 100%; display: flex; justify-content: center; align-items: flex-start; margin: 0 auto 40px auto; padding: 0; box-sizing: border-box;}
+.visualizer-card {width: 1200px; max-width: 90vw; margin-left: auto; margin-right: auto; margin-bottom: var(--spacing-sm); padding: 24px; background: var(--bg-primary); border-radius: var(--radius-2xl); box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); box-sizing: border-box; margin-bottom: 2em; margin-top: 2em;}
 .visualizer-content img {width: 100%; max-width: 600px; border-radius: 12px; display: block; margin: 12px auto;}
 .visualizer-content img.original-image {width: auto; max-width: none;}
 .image-row {display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;}
