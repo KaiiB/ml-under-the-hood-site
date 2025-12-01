@@ -1,8 +1,11 @@
 import EM from "./scripts/EM.tsx";
 import PCA from "./scripts/PCA.tsx";
+import LinReg from './scripts/LinReg';
+import KMeans from './scripts/KMeans';
+import Regularization from './scripts/Regularization';
 import { useState } from "react";
 
-type Page = "em" | "pca" | "home";
+type Page = "home" | "em" | "pca" | "linreg" | "kmeans" | "regularization";
 
 function HomePage() {
   return (
@@ -155,6 +158,24 @@ function App() {
             >
               PCA
             </button>
+            <button
+              className={`nav-button ${page === "kmeans" ? "active" : ""}`}
+              onClick={() => setPage("kmeans")}
+            >
+              K-Means
+            </button>
+            <button
+              className={`nav-button ${page === "linreg" ? "active" : ""}`}
+              onClick={() => setPage("linreg")}
+            >
+              Linear Regression
+            </button>
+            <button
+              className={`nav-button ${page === "regularization" ? "active" : ""}`}
+              onClick={() => setPage("regularization")}
+            >
+              Regularization
+            </button>
           </div>
         </div>
       </nav>
@@ -163,6 +184,9 @@ function App() {
         {page === "home" && <HomePage />}
         {page === "em" && <EM />}
         {page === "pca" && <PCA />}
+        {page === "kmeans" && <KMeans />}
+        {page === "linreg" && <LinReg />}
+        {page === "regularization" && <Regularization />}
       </main>
     </>
   );

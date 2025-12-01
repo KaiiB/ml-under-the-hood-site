@@ -1,0 +1,26 @@
+.wcss-plot {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  min-height: 400px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.wcss-plot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.wcss-dot {
+  cursor: pointer;
+}
+
+.wcss-plot text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+

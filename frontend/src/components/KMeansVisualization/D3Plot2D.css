@@ -1,0 +1,53 @@
+/* D3 2D Plot Styles */
+.plot-container {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  min-height: 600px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.plot-container svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 600px;
+}
+
+.data-point {
+  cursor: pointer;
+}
+
+.centroid {
+  cursor: pointer;
+}
+
+.manual-centroid {
+  cursor: grab;
+}
+
+.manual-centroid:active {
+  cursor: grabbing;
+}
+
+.voronoi-cell {
+  fill-opacity: 0.08;
+  stroke: none;
+}
+
+.trajectory {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 5, 5;
+  opacity: 0.6;
+}
+
+.distance-line {
+  stroke-width: 1.5;
+  stroke-opacity: 0.5;
+}
+
