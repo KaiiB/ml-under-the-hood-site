@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Plot from "react-plotly.js";
 import "../../styles/global.css";
 
