@@ -66,8 +66,8 @@ function HomePage() {
               </div>
             </div>
 
-            {/* Coming Soon: KMeans */}
-            <div className="algo-card coming-soon">
+            {/* KMeans */}
+            <div className="algo-card kmeans-card">
               <div className="algo-icon">⏳</div>
               <h3>K-Means Clustering</h3>
               <p>
@@ -80,8 +80,8 @@ function HomePage() {
               </div>
             </div>
 
-            {/* Coming Soon: Linear Regression */}
-            <div className="algo-card coming-soon">
+            {/* Linear Regression */}
+            <div className="algo-card linreg-card">
               <div className="algo-icon">📈</div>
               <h3>Linear Regression</h3>
               <p>

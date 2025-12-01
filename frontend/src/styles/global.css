@@ -213,6 +213,8 @@ html {
 .algo-card:hover::before { transform: scaleX(1); }
 .algo-card.em-card { color: var(--em-primary); border-color: rgba(139, 92, 246, 0.1); }
 .algo-card.pca-card { color: var(--pca-primary); border-color: rgba(236, 72, 153, 0.1); }
+.algo-card.linreg-card { color: var(--linreg-primary); border-color: rgba(139, 92, 246, 0.1); }
+.algo-card.kmeans-card { color: var(--kmeans-primary); border-color: rgba(236, 72, 153, 0.1); }
 .algo-icon { font-size: 3rem; margin-bottom: var(--spacing-lg); display: inline-block; }
 .algo-card h3 { font-size: 1.375rem; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-primary); }
 .algo-card p { font-size: 0.975rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
