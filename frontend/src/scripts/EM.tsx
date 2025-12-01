@@ -1,4 +1,3 @@
-import TestAPI from "../TestAPI";
 import * as d3 from "d3";
 import { useEffect, useState, useRef, useMemo } from "react";
 import Plot from "react-plotly.js";

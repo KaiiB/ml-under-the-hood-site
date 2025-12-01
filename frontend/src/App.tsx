@@ -1,4 +1,3 @@
-import TestAPI from "./TestAPI";
 import EM from "./scripts/EM.tsx";
 import { useState } from "react";
 
@@ -20,7 +19,6 @@ function App() {
       {page === "home" && (
         <div style={{ padding: "2rem" }}>
           <h1>API Test</h1>
-          <TestAPI />
         </div>
       )}
 
