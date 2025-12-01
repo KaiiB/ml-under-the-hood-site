@@ -140,12 +140,6 @@ const KMeans: React.FC = () => {
     try {
       // Use datasetConfig.nClusters directly to ensure we have the latest value
       const currentNClusters = datasetConfig.nClusters || 3;
-      
-      console.log('Initializing with:', {
-        nClusters: currentNClusters,
-        datasetConfig: datasetConfig.nClusters,
-        computedNClusters: nClusters,
-      });
 
       // If in placement mode and centroids are placed, use them
       let initialCentroids: number[][] | undefined;
@@ -224,7 +218,6 @@ const KMeans: React.FC = () => {
         },
       };
 
-      console.log('Sending request with n_clusters:', currentNClusters);
       const trace = await kmeansAPI.runKMeansTrace(request);
       setTraceData(trace);
       setCurrentIteration(0);

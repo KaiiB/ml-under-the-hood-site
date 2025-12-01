@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import TestAPI from './TestAPI';
 import LinReg from './scripts/LinReg';
 import EM from './scripts/EM';
 import KMeans from './scripts/KMeans';
+import Regularization from './scripts/Regularization';
 
-type Tab = 'test' | 'linreg' | 'em' | 'kmeans';
+type Tab = 'linreg' | 'em' | 'kmeans' | 'regularization';
 
 function App() {
   // Force 'linreg' as default tab
@@ -18,21 +18,21 @@ function App() {
 
   const tabs = [
     { id: 'linreg' as Tab, label: 'Linear Regression' },
+    { id: 'regularization' as Tab, label: 'Regularization' },
     { id: 'em' as Tab, label: 'EM' },
     { id: 'kmeans' as Tab, label: 'K-Means' },
-    { id: 'test' as Tab, label: 'Test API' },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
       case 'linreg':
         return <LinReg />;
+      case 'regularization':
+        return <Regularization />;
       case 'em':
         return <EM />;
       case 'kmeans':
         return <KMeans />;
-      case 'test':
-        return <TestAPI />;
       default:
         return <LinReg />;
     }

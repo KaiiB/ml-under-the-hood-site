@@ -366,10 +366,71 @@
   display: none !important;
 }
 
+/* Hide Plotly logo/watermark */
+.plot-container .js-plotly-plot .plotly-logomark,
+.plot-container .js-plotly-plot [class*="plotly-logomark"],
+.plot-container .js-plotly-plot .modebar-container .modebar-group:last-child,
+.plot-container .js-plotly-plot .modebar .modebar-group:last-child {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Make Plotly toolbar buttons and position at top right */
+.plot-container .js-plotly-plot .modebar {
+  top: 5px !important;
+  right: 5px !important;
+  transform: scale(0.84) !important; /* 20% larger than 0.7 */
+  transform-origin: top right !important;
+  position: absolute !important;
+  z-index: 10 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.plot-container .js-plotly-plot .modebar-btn {
+  width: 24px !important;
+  height: 24px !important;
+  padding: 2px !important;
+  margin: 2px !important;
+}
+
+.plot-container .js-plotly-plot .modebar-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.plot-container .js-plotly-plot .modebar-btn .icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.plot-container .js-plotly-plot .modebar-group {
+  margin-left: 3px !important;
+}
+
+/* Plot container positioning */
+.plot-container {
+  position: relative !important;
+}
+
 .plot-container .js-plotly-plot .scene .xaxislayer-above,
 .plot-container .js-plotly-plot .scene .yaxislayer-above,
 .plot-container .js-plotly-plot .scene .zaxislayer-above {
   z-index: 2;
+}
+
+/* Plotly hover effects - enhance visibility */
+.plot-container .js-plotly-plot .hoverlayer path {
+  stroke-width: 3 !important;
+  opacity: 0.9 !important;
+}
+
+.plot-container .js-plotly-plot .hovertext {
+  font-size: 12px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 .plot-title {
@@ -435,7 +496,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: 0; /* Remove bottom margin for Linear Regression page */
 }
 
 .metric-card {

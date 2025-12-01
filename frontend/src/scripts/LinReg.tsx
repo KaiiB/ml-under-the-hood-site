@@ -51,17 +51,36 @@ const LinReg: React.FC = () => {
     if (!traceData || !traceData.steps || traceData.steps.length === 0) {
       return null;
     }
-    return traceData.steps[Math.min(currentIteration, traceData.steps.length - 1)];
+    // Find the step at currentIteration, but skip "converged" steps that don't have weights
+    const step = traceData.steps[Math.min(currentIteration, traceData.steps.length - 1)];
+    // If the step doesn't have weights, find the last valid step
+    if (step && (!step.payload || !step.payload.weights)) {
+      // Find the last step with weights
+      for (let i = Math.min(currentIteration, traceData.steps.length - 1); i >= 0; i--) {
+        const s = traceData.steps[i];
+        if (s.payload && s.payload.weights && s.payload.weights.length > 0) {
+          return s;
+        }
+      }
+    }
+    return step;
   }, [traceData, currentIteration]);
 
   const totalIterations = useMemo(() => {
-    return traceData ? traceData.steps.length - 1 : 0;
+    if (!traceData || !traceData.steps) return 0;
+    // Find the last "update" step (not "converged" which has no weights)
+    for (let i = traceData.steps.length - 1; i >= 0; i--) {
+      if (traceData.steps[i].type === 'update' || traceData.steps[i].type === 'init') {
+        return i;
+      }
+    }
+    return traceData.steps.length - 1;
   }, [traceData]);
 
-  // Reset trace data when dimensions change
+  // Don't reset trace data when dimensions change - same data can be viewed in 2D or 3D
+  // Just reset iteration to 0 when switching dimensions
   useEffect(() => {
     if (traceData) {
-      setTraceData(null);
       setCurrentIteration(0);
     }
   }, [datasetConfig.dimensions]);
@@ -81,6 +100,8 @@ const LinReg: React.FC = () => {
           noise_std: datasetConfig.noiseStd,
           x_min: datasetConfig.xMin,
           x_max: datasetConfig.xMax,
+          num_features: datasetConfig.dimensions === 3 ? 2 : 1, // 3D mode uses 2 features
+          true_weights: datasetConfig.dimensions === 3 ? [datasetConfig.trueSlope, 1.0] : null,
         },
         algo: {
           learning_rate: algorithmConfig.learningRate,
@@ -124,7 +145,7 @@ const LinReg: React.FC = () => {
   }, []);
 
   const handleLast = useCallback(() => {
-    if (traceData) {
+    if (traceData && totalIterations >= 0) {
       setCurrentIteration(totalIterations);
     }
   }, [traceData, totalIterations]);
@@ -157,15 +178,12 @@ const LinReg: React.FC = () => {
             algorithmConfig={algorithmConfig}
             visualizationConfig={visualizationConfig}
             onDatasetConfigChange={(config) => {
-              console.log('Dataset config change:', config);
               setDatasetConfig({ ...datasetConfig, ...config });
             }}
             onAlgorithmConfigChange={(config) => {
-              console.log('Algorithm config change:', config);
               setAlgorithmConfig({ ...algorithmConfig, ...config });
             }}
             onVisualizationConfigChange={(config) => {
-              console.log('Visualization config change:', config);
               setVisualizationConfig({ ...visualizationConfig, ...config });
             }}
             onInitialize={handleInitialize}
@@ -203,28 +221,40 @@ const LinReg: React.FC = () => {
                       currentIteration={currentIteration}
                     />
 
-                    {datasetConfig.dimensions === 2 ? (
+                    <div style={{ marginTop: '0' }}>
+                      {datasetConfig.dimensions === 2 ? (
                       <>
-                        <D3Plot2D
-                          traceData={traceData}
-                          step={currentStep}
-                          currentIteration={currentIteration}
-                          config={visualizationConfig}
-                          seed={datasetConfig.seed}
-                        />
-                        <div style={{ marginTop: '0.33rem' }}>
-                          <CostHistoryPlot 
-                            traceData={traceData} 
-                            currentIteration={currentIteration}
-                          />
-                        </div>
+                        {currentStep ? (
+                          <>
+                            <D3Plot2D
+                              traceData={traceData}
+                              step={currentStep}
+                              currentIteration={currentIteration}
+                              config={visualizationConfig}
+                              seed={datasetConfig.seed}
+                            />
+                            <div style={{ marginTop: '0.33rem' }}>
+                              <CostHistoryPlot 
+                                traceData={traceData} 
+                                currentIteration={currentIteration}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="loading">Loading visualization...</div>
+                        )}
                       </>
                     ) : (
-                      <CostSurface3D 
-                        traceData={traceData} 
-                        currentIteration={currentIteration}
-                      />
+                      traceData ? (
+                        <CostSurface3D 
+                          traceData={traceData} 
+                          currentIteration={currentIteration}
+                        />
+                      ) : (
+                        <div className="loading">Loading 3D visualization...</div>
+                      )
                     )}
+                    </div>
                   </>
                 )}
 

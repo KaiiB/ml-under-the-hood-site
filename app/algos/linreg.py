@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Optional
 
 # Data generation (Linear Regression)
 
@@ -10,30 +11,62 @@ def generate_linear_data(
     noise_std: float = 0.5,
     x_min: float = -5.0,
     x_max: float = 5.0,
+    num_features: int = 1,  # 1 for 2D plot, 2 for 3D plane
+    true_weights: Optional[list] = None,  # For 2D features: [w1, w2] or [b, w1, w2]
 ):
     """
     Generate synthetic linear regression data.
     
+    Args:
+        num_features: 1 for simple linear regression (y = w*x + b), 2 for plane regression (y = w1*x1 + w2*x2 + b)
+        true_weights: For 2D features, specify [w1, w2] or [b, w1, w2]. If None, uses true_slope/true_intercept.
+    
     Returns:
-      X: (n, 1) input features
+      X: (n, num_features) input features
       y: (n,) target values
-      meta: {true_slope, true_intercept, noise_std} for ground truth
+      meta: metadata for ground truth
     """
     np.random.seed(seed)
     
-    # Generate X values
-    X = np.random.uniform(x_min, x_max, size=(n, 1))
+    if num_features == 1:
+        # 1D feature: simple linear regression
+        X = np.random.uniform(x_min, x_max, size=(n, 1))
+        y = true_slope * X.flatten() + true_intercept + np.random.normal(0, noise_std, size=n)
+        
+        meta = {
+            "true_slope": float(true_slope),
+            "true_intercept": float(true_intercept),
+            "noise_std": float(noise_std),
+            "x_min": float(x_min),
+            "x_max": float(x_max),
+            "num_features": 1,
+        }
+    else:
+        # 2D features: plane regression y = w1*x1 + w2*x2 + b
+        X = np.random.uniform(x_min, x_max, size=(n, 2))
+        
+        if true_weights is None:
+            # Default: use true_slope as w1, w2 = 1.0, true_intercept as b
+            w1, w2 = true_slope, 1.0
+            b = true_intercept
+        elif len(true_weights) == 2:
+            w1, w2 = true_weights[0], true_weights[1]
+            b = true_intercept
+        else:  # len == 3
+            b, w1, w2 = true_weights[0], true_weights[1], true_weights[2]
+        
+        y = w1 * X[:, 0] + w2 * X[:, 1] + b + np.random.normal(0, noise_std, size=n)
+        
+        meta = {
+            "true_weights": [float(b), float(w1), float(w2)],
+            "true_intercept": float(b),
+            "true_slope": None,  # Not applicable for 2D
+            "noise_std": float(noise_std),
+            "x_min": float(x_min),
+            "x_max": float(x_max),
+            "num_features": 2,
+        }
     
-    # Generate y = slope * x + intercept + noise
-    y = true_slope * X.flatten() + true_intercept + np.random.normal(0, noise_std, size=n)
-    
-    meta = {
-        "true_slope": float(true_slope),
-        "true_intercept": float(true_intercept),
-        "noise_std": float(noise_std),
-        "x_min": float(x_min),
-        "x_max": float(x_max),
-    }
     return X, y, meta
 
 
@@ -167,12 +200,37 @@ def run_linreg_trace(dataset_params: dict, algo_params: dict) -> dict:
 
     # Extract final weights
     final_weights = linreg.weights.tolist()
-    if linreg.fit_intercept:
-        final_intercept = final_weights[0]
-        final_slope = final_weights[1] if len(final_weights) > 1 else 0.0
+    num_features = X.shape[1]
+    
+    if num_features == 1:
+        # 1D feature: simple linear regression
+        if linreg.fit_intercept:
+            final_intercept = final_weights[0]
+            final_slope = final_weights[1] if len(final_weights) > 1 else 0.0
+        else:
+            final_intercept = 0.0
+            final_slope = final_weights[0] if len(final_weights) > 0 else 0.0
+        
+        final_weights_dict = {
+            "intercept": float(final_intercept),
+            "slope": float(final_slope),
+        }
     else:
-        final_intercept = 0.0
-        final_slope = final_weights[0] if len(final_weights) > 0 else 0.0
+        # 2D features: plane regression
+        if linreg.fit_intercept:
+            final_intercept = final_weights[0]
+            final_w1 = final_weights[1] if len(final_weights) > 1 else 0.0
+            final_w2 = final_weights[2] if len(final_weights) > 2 else 0.0
+        else:
+            final_intercept = 0.0
+            final_w1 = final_weights[0] if len(final_weights) > 0 else 0.0
+            final_w2 = final_weights[1] if len(final_weights) > 1 else 0.0
+        
+        final_weights_dict = {
+            "intercept": float(final_intercept),
+            "w1": float(final_w1),
+            "w2": float(final_w2),
+        }
 
     trace = {
         "schema_version": 1,
@@ -194,9 +252,9 @@ def run_linreg_trace(dataset_params: dict, algo_params: dict) -> dict:
         },
         "steps": steps,
         "cost_history": costs,
-        "final_weights": {
-            "intercept": float(final_intercept),
-            "slope": float(final_slope),
-        },
+        "final_weights": final_weights_dict,
+        # Include X and y for 3D visualization
+        "X": X.tolist() if num_features == 2 else None,
+        "y": y.tolist() if num_features == 2 else None,
     }
     return trace

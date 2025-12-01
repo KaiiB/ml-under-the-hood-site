@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 
 class LinRegDatasetParams(BaseModel):
@@ -10,6 +10,8 @@ class LinRegDatasetParams(BaseModel):
     noise_std: float = 0.5
     x_min: float = -5.0
     x_max: float = 5.0
+    num_features: int = 1  # 1 for 2D plot, 2 for 3D plane
+    true_weights: Optional[list] = None  # For 2D features: [w1, w2] or [b, w1, w2]
 
 
 class LinRegAlgoParams(BaseModel):
