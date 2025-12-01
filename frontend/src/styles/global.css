@@ -306,17 +306,151 @@ html {
 .main-text details {margin-left: 2em;}
 .indented-details {margin-left: 2em;}
 /* -------------------- EM specific (from styles/EM.css and scripts/EM.css) -------------------- */
-.em-page { max-width: var(--site-max-width); margin: 0 auto; padding: var(--spacing-xl); box-sizing: border-box; }
-.em-header { text-align: center; margin-bottom: var(--spacing-2xl); padding: var(--spacing-2xl) var(--spacing-xl); background: var(--bg-primary); border-radius: var(--radius-2xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); }
-.em-header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: var(--spacing-sm); letter-spacing: -0.02em; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.em-controls { background: var(--bg-primary); border-radius: var(--radius-2xl); padding: var(--spacing-lg); box-shadow: var(--shadow-xl); max-height: calc(100vh - 200px); overflow-y: auto; position: sticky; top: var(--spacing-xl); border: 1px solid var(--border-color); backdrop-filter: blur(10px); display: flex; flex-direction: column; }
-.em-plot { background: var(--bg-primary); border-radius: var(--radius-2xl); padding: var(--spacing-xl); box-shadow: var(--shadow-xl); min-height: 600px; border: 1px solid var(--border-color); }
-.em-control-group label { display: block; font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
-.em-control-group input[type="range"] { width: 100%; }
-.em-iter-slider { width: 100%; max-width: 320px; display: block; margin-top: var(--spacing-sm); }
-.em-plot-row { display: flex; gap: var(--spacing-md); align-items: stretch; flex-wrap: wrap; }
-.em-plot-3d { flex: 3 1 0; min-width: 0; }
-.em-loglikelihood-chart { flex: 2 1 0; min-width: 0; height: 620px; }
+.em-page {
+  max-width: 2000px;                 /* wider than the default site width */
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  box-sizing: border-box;
+}
+
+/* Header: reuse .header card styles, add EM-specific animation + sizing */
+.em-header-animated {
+  animation: slideUp 0.8s ease-out;
+  animation-fill-mode: both;
+}
+
+.em-header h1 {
+  font-size: 2.75rem;                /* a bit larger/wider */
+  max-width: 32rem;
+  margin: 0 auto var(--spacing-sm);
+}
+
+/* Tabs hover / active transitions only on EM page */
+.em-page .tab {
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.em-page .tab:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  background: rgba(37, 99, 235, 0.06);
+  color: var(--primary);
+}
+
+/* Active tab gets a slightly stronger effect on hover */
+.em-page .tab.active:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Layout for EM visualization area: 3D plot + log-likelihood */
+.em-page .em-plot-row {
+  display: grid;
+  grid-template-columns: 2fr 1.3fr;  /* left plot wider than right */
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+/* Card wrapper around plots (EM only, overrides generic .plot-container) */
+.em-page .plot-container {
+  position: relative;
+  background: var(--bg-primary);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  overflow: hidden;                  /* keeps Plotly/D3 inside card */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Titles above cluster/log-likelihood/explanation cards */
+.em-page .plot-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+/* Individual plot areas */
+.em-page .em-plot-3d,
+.em-page .em-loglikelihood-chart {
+  height: 500px;                     /* tweak if you want taller/shorter */
+}
+
+/* EM explanation text */
+.em-page .explanation-content {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+/* Add spacing between paragraphs only on EM page */
+.em-page .explanation-content > p {
+  margin-bottom: 1rem;
+}
+
+/* EM explanation formula cards */
+.em-page .formula-section {
+  margin-top: 1.5rem;
+}
+
+.em-page .formula-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.em-page .formula-card {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: #f9fafb;
+}
+
+.em-page .formula {
+  margin-top: 0.35rem;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.em-page .formula-note {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.em-page .main-grid {
+  grid-template-columns: 300px 1fr; /* was 340px 1fr; bump to taste */
+}
+
+.em-page .slider-container {
+  width: 100%;
+}
+
+.em-page .slider-container input[type="range"] {
+  width: 100%;
+  flex: 1;
+}
+
+.em-page .iteration-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Text block ("Iteration", "Step X of Y") */
+.em-page .iteration-info > div {
+  min-width: 150px;   /* adjust if you want more/less text space */
+}
+
+/* Actual slider bar */
+.em-page .iteration-slider {
+  flex: 1;
+  width: 100%;
+}
 
 /* -------------------- small helpers & responsiveness -------------------- */
 @media (max-width: 900px) {
