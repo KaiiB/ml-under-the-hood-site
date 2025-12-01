@@ -8,15 +8,11 @@ import DataFrameTable from "./pca/DataFrameTable";
 
 function PCA() {
   return (
-    <div>
-      <section className="container em-page">
-        <header className="header em-header em-header-animated">
-          <h1>How PCA Works</h1>
-          <p>Mastering Dimensionality Reduction!</p>
-        </header>
-      </section>
-
-      <h2 className="section-title">PCA: Why Do We Need It?</h2>
+    <div className="container">
+      <div className="header">
+        <h1>Principal Component Analysis</h1>
+        <p>PCA: Why Do We Need It?</p>
+      </div>
 
       <div className="main-text">
         <p>

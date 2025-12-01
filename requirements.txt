@@ -3,3 +3,6 @@ numpy
 # pandas
 scipy
 katex 
+scikit-learn
+pydantic
+uvicorn
