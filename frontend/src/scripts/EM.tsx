@@ -1,8 +1,7 @@
 import * as d3 from "d3";
 import { useEffect, useState, useRef, useMemo } from "react";
 import Plot from "react-plotly.js";
-import "../styles/components.css";
-import "../styles/globals.css";
+import "../styles/global.css";
 
 // Types fo EM elliposoid step payload
 type EMStepPayload = {
@@ -244,7 +243,7 @@ function makeEllipsoidSurface(
   return { x, y, z };
 }
 
-function renderEmPlot(trace: EMtrace_dict, iter: number, layout) {
+function renderEmPlot(trace: EMtrace_dict, iter: number, layout: any) {
   const step = trace.steps[iter];
   const means = step.payload.mu;      // [C][3]
   const covs = step.payload.sigma;  // [C][3][3]
@@ -331,12 +330,13 @@ function renderEmPlot(trace: EMtrace_dict, iter: number, layout) {
   }
 
   return (
-    <Plot
-      data={data}
-      layout={layout}
-      style={{ width: "100%", height: "100%" }}
-    />
-  );
+  <Plot
+    data={data}
+    layout={layout}
+    style={{ width: "100%", height: "100%" }}
+    useResizeHandler={true}
+  />
+);
 }
 
 
@@ -365,7 +365,6 @@ export default function EM() {
         () => ({
         autosize: true,
         height: 600,
-        width: 800,
         scene: {
             xaxis: { title: "x" },
             yaxis: { title: "y" },
@@ -429,7 +428,7 @@ export default function EM() {
     return (
   <section className="container em-page">
     {/* Big header like K-Means */}
-    <header className="header">
+    <header className="header em-header em-header-animated">
       <h1>EM for Gaussian Mixtures</h1>
       <p>Interactive step-by-step visualization of the EM algorithm.</p>
     </header>

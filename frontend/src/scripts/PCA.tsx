@@ -6,7 +6,7 @@ import PCASliderInteractive from "./pca/PCASliderInteractive";
 import ImageContainer from "./pca/ImageContainer";
 import DataFrameTable from "./pca/DataFrameTable";
 
-function App() {
+function PCA() {
   return (
     <div>
       <h1> How PCA Works </h1>
@@ -676,4 +676,4 @@ function App() {
   );
 }
 
-export default App;
+export default PCA;
