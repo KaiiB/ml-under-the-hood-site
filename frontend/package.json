@@ -16,7 +16,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-plotly.js": "^2.6.0",
-    "three": "^0.181.2"
+    "three": "^0.181.2",
     "katex": "^0.16.25",
     "plotly.js-basic-dist": "^3.3.0",
     "plotly.js-dist-min": "^3.3.0",

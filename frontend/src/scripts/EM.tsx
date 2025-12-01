@@ -1,10 +1,8 @@
-import TestAPI from "../TestAPI";
 import * as d3 from "d3";
 import { useEffect, useState, useRef, useMemo } from "react";
 import Plot from "react-plotly.js";
-import "./EM.css";
-import "../styles/components.css";
-import "../styles/globals.css";
+import "../styles/global.css";
+
 
 // Types fo EM elliposoid step payload
 type EMStepPayload = {
@@ -210,7 +208,7 @@ function makeEllipsoidSurface(
   return { x, y, z };
 }
 
-function renderEmPlot(trace: EMtrace_dict, iter: number, layout) {
+function renderEmPlot(trace: EMtrace_dict, iter: number, layout: any) {
   const step = trace.steps[iter];
   const means = step.payload.mu;      // [C][3]
   const covs = step.payload.sigma;  // [C][3][3]

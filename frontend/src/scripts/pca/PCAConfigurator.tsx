@@ -1,7 +1,6 @@
 import { useReducer, useState } from "react";
 import PCAPlot from "./PCAPlot";
-import "../../globals.css";
-import "../../styles/ryo_components.css";
+import "../../styles/global.css";
 
 /* --- Reducer for PCA state --- */
 type State = {
