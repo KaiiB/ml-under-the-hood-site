@@ -119,6 +119,7 @@ export default function PCAPlot({
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <button
+        className="btn btn-primary"
         onClick={() => setShowProjected((p) => !p)}
         style={{ marginBottom: "10px", width: "200px" }}
       >

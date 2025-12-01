@@ -535,3 +535,31 @@ html {
 }
 
 /* End merged stylesheet */
+
+/* ---------- STRONG PLOTLY ISOLATION OVERRIDES ---------- */
+
+/* Buttons specifically */
+.plot-container .modebar-btn,
+.plot-container .modebar-btn * {
+  font-size: 12px !important;
+  line-height: 1 !important;
+  padding: 0.5 !important;
+  margin: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  box-sizing: content-box !important;
+}
+
+/* Force SVG icon sizes (safe explicit sizing) */
+.plot-container .modebar-btn svg,
+.plot-container .modebar-btn .icon {
+  width: 18px !important;
+  height: 18px !important;
+  max-width: none !important;
+  max-height: none !important;
+  display: inline-block !important;
+}
+
+/* end strong overrides */

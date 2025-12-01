@@ -56,8 +56,8 @@ function HomePage() {
               <div className="algo-icon">📊</div>
               <h3>Principal Component Analysis (PCA)</h3>
               <p>
-                Learn how PCA reduces dimensionality while preserving the most important variance in your data.
-                Visualize how data is transformed into a new coordinate system.
+                Learn how PCA reduces dimensionality while preserving overall data structure.
+                Visualize how data looks when plotted on the principal axes.
               </p>
               <div className="algo-tags">
                 <span className="tag">Dimensionality</span>
