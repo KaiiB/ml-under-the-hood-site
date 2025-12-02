@@ -378,10 +378,13 @@ html {
   color: var(--text-primary);
 }
 
-/* Individual plot areas */
-.em-page .em-plot-3d,
+.em-page .em-plot-3d {
+  /* let the 3D card grow to fit: plot + cluster stats */
+  /* no fixed height here */
+}
+
 .em-page .em-loglikelihood-chart {
-  height: 500px;                     /* tweak if you want taller/shorter */
+  height: 500px; /* keep right-hand chart fixed-height */
 }
 
 /* EM explanation text */
@@ -452,6 +455,65 @@ html {
   flex: 1;
   width: 100%;
 }
+
+.em-page .cluster-stats {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.75rem 0.6rem;
+  border-radius: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+.em-page .cluster-stats-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.em-page .cluster-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
+}
+
+.em-page .cluster-card {
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.6rem;
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.em-page .cluster-card-header {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.em-page .cluster-card-body {
+  font-size: 0.8rem;
+}
+
+.em-page .cluster-row {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.15rem;
+}
+
+.em-page .cluster-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 3rem;
+}
+
+.em-page .cluster-value {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+  color: var(--text-primary);
+  white-space: nowrap;     /* <-- prevents [a, b, c] from wrapping */
+}
+
 
 /* -------------------- small helpers & responsiveness -------------------- */
 @media (max-width: 900px) {

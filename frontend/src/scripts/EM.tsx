@@ -724,10 +724,70 @@ export default function EM() {
             )}
 
             {!loading && trace && (
-              viewMode === "raw"
+  <>
+              {/* Plot (raw vs model) */}
+              {viewMode === "raw"
                 ? renderRawPlot(trace, layout)
-                : renderEmPlot(trace, iter, layout)
-            )}
+                : renderEmPlot(trace, iter, layout)}
+
+              {/* Cluster parameter box only when we’re in model view */}
+              {viewMode === "model" && trace.steps[iter] && (
+                <div className="cluster-stats">
+                  <div className="cluster-stats-title">
+                    Cluster parameters at iteration {iter}
+                  </div>
+
+                  <div className="cluster-stats-grid">
+                    {trace.steps[iter].payload.mu.map((mu, idx) => {
+                      const cov = trace.steps[iter].payload.sigma[idx]; // full 3x3
+                      const pi = trace.steps[iter].payload.pi[idx];
+
+                      return (
+                        <div key={idx} className="cluster-card">
+                          <div className="cluster-card-header">
+                            Component {idx}
+                          </div>
+                          <div className="cluster-card-body">
+                            {/* mean */}
+                            <div className="cluster-row">
+                              <span className="cluster-label">μ</span>
+                              <span className="cluster-value">
+                                [{mu[0].toFixed(2)}, {mu[1].toFixed(2)}, {mu[2].toFixed(2)}]
+                              </span>
+                            </div>
+
+                            {/* full 3×3 covariance */}
+                            <div className="cluster-row matrix-row">
+                              <span className="cluster-label">Σ</span>
+                              <div className="cluster-matrix">
+                                {cov.map((row: number[], rIdx: number) => (
+                                  <div key={rIdx} className="cluster-matrix-row">
+                                    [{row[0].toFixed(2)}, {row[1].toFixed(2)}, {row[2].toFixed(2)}]
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* mixture weight */}
+                            <div className="cluster-row">
+                              <span className="cluster-label">π</span>
+                              <span className="cluster-value">
+                                {pi.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                      
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+
+
           </div>
 
           {/* RIGHT: log-likelihood chart */}
