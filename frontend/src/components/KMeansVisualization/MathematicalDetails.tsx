@@ -1,6 +1,8 @@
 import React from 'react';
 import type { KMeansTrace, TraceStep } from '../../services/api';
 import './MathematicalDetails.css';
+import { BlockMath, InlineMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 interface MathematicalDetailsProps {
   traceData: KMeansTrace | null;
@@ -138,17 +140,17 @@ const MathematicalDetails: React.FC<MathematicalDetailsProps> = ({
         <div className="formula-box">
           <strong>Euclidean Distance:</strong>
           <br />
-          d(x, c) = √[(x₁ - c₁)² + (x₂ - c₂)² + ... + (xₙ - cₙ)²]
+          <BlockMath math={String.raw`d(x, c) = \sqrt{(x_1 - c_1)^2 + (x_2 - c_2)^2 + \cdots + (x_n - c_n)^2}`} />
         </div>
         <div className="formula-box">
           <strong>Centroid Update:</strong>
           <br />
-          c_new = (1/n) × Σx_i for all points x_i in cluster
+          <BlockMath math={String.raw`c_{\text{new}} = \frac{1}{n} \sum_{i=1}^{n} x_i`} />
         </div>
         <div className="formula-box">
           <strong>WCSS Objective Function:</strong>
           <br />
-          J = Σᵢ₌₁ⁿ Σⱼ₌₁ᵏ ||xᵢ - μⱼ||²
+          <BlockMath math={String.raw`J = \sum_{i=1}^{n} \sum_{j=1}^{k} \lVert x_i - \mu_j \rVert^2`} />
         </div>
       </div>
 
