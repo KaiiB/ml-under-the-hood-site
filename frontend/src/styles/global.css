@@ -504,7 +504,7 @@ html {
 .em-page .cluster-label {
   font-weight: 500;
   color: var(--text-secondary);
-  min-width: 3rem;
+  min-width: 2rem;
 }
 
 .em-page .cluster-value {
