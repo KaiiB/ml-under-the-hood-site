@@ -634,7 +634,7 @@ function PCA() {
 
       <DisplayPCA />
 
-      <h2 className="section-title">Bibliography</h2>
+      <h2 className="section-title">References</h2>
       <div className = "main-text">
         <ul>
           <li>“Flashy Style a Product of Practice for Must-See Magomedsharipov.” UFC, October 3, 2018.  <a href="https://www.ufc.com.br/news/flashy-style-product-practice-must-see-magomedsharipov">https://www.ufc.com.br/news/flashy-style-product-practice-must-see-magomedsharipov</a>. </li>

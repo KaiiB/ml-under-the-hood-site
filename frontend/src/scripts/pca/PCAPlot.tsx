@@ -54,7 +54,7 @@ export default function PCAPlot({
         marker: {
           size: 6,
           color: colors[si % colors.length],
-          opacity: 0.85,
+          opacity: 0.4,
         },
         name: `Set ${si + 1}`,
       });
