@@ -175,7 +175,7 @@ const CoefficientPath3D: React.FC<CoefficientPath3DProps> = ({ pathData, nFolds 
     autosizable: true,
     modeBarButtonsToRemove: ['lasso2d', 'select2d'],
     displaylogo: false, // Hide Plotly logo
-  } as Plotly.Config;
+  } as unknown as Plotly.Config;
 
   return (
     <div 

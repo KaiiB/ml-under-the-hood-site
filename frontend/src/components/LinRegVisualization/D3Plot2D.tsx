@@ -49,7 +49,7 @@ const D3Plot2D: React.FC<D3Plot2DProps> = ({
     }
 
     const trueY = xValues.map(x => 
-      traceData.meta.data.true_slope * x + traceData.meta.data.true_intercept
+      (traceData.meta.data.true_slope ?? 0) * x + (traceData.meta.data.true_intercept ?? 0)
     );
 
     const intercept = step.payload.weights[0];

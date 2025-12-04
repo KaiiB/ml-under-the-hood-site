@@ -2,6 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 // @ts-ignore
 import Plot from 'react-plotly.js';
+// @ts-ignore
+import Plotly from 'plotly.js-dist-min';
 import type { CoefficientPathData } from '../../services/api';
 
 interface LambdaVsMSE2DProps {

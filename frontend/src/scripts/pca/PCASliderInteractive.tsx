@@ -37,14 +37,12 @@ const PCAVisualizer: React.FC<PCAVisualizerProps> = ({
   const [angleDeg, setAngleDeg] = useState<number>(0);
 
   const raw: number[][] = pcaData.data[0];
-  const projectedScalar: number[] = pcaData.projected[0].map((p: any) => p[0]);
   const [cx, cy] = pcaData.meta.ellipse.ellipse_center;
   const center: [number, number] = [cx, cy];
   const ellipse_width: number = pcaData.meta.ellipse.ellipse_width;
   const ellipse_height: number = pcaData.meta.ellipse.ellipse_height;
   const eigvecs = pcaData.meta.eigens.eigvecs;
   const truePC: [number, number] = [eigvecs[0][0], eigvecs[1][0]];
-  const eigval = pcaData.meta.eigens.eigvals?.[0] ?? 1;
 
   const angleRad = (angleDeg * Math.PI) / 180;
   const guessVec: [number, number] = [Math.cos(angleRad), Math.sin(angleRad)];

@@ -6,13 +6,11 @@ import type { LinRegTrace } from '../../services/api';
 interface CostHistoryPlotProps {
   traceData: LinRegTrace | null;
   currentIteration: number;
-  isActive?: boolean; // Optional for backward compatibility
 }
 
 const CostHistoryPlot: React.FC<CostHistoryPlotProps> = ({
   traceData,
   currentIteration,
-  isActive = true, // Default to true
 }) => {
   const plotRef = useRef<SVGSVGElement>(null);
 
