@@ -446,7 +446,9 @@ export default function EM() {
             },
             };
 
-            const res = await fetch("http://localhost:8000/api/trace/em", { //change url when deploying server
+            // Use environment-configurable API base URL and correct backend path
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+            const res = await fetch(`${API_BASE}/api/traces/em`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
