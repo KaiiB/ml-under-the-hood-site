@@ -27,6 +27,10 @@ app.add_middleware(
 def health():
     return {"status": "ok"}
 
+@app.get("/")
+def home():
+    return {"message": "ML Under the Hood API is running"}
+
 
 # Mount routers under a common prefix
 app.include_router(em_router, prefix="/api/trace", tags=["em"]) # reachable at /api/trace/em, POST body as EMRequest formatted JSON 
