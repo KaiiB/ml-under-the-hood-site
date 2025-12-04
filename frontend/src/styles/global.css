@@ -151,7 +151,7 @@ html {
 .brand-title {
 	font-size: 1.5rem;
 	font-weight: 700;
-	background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 50%, #ec4899 100%);
+	background: linear-gradient(135deg, #0b1b3d 0%, #2b0b75 50%, #431094 100%);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
@@ -193,7 +193,7 @@ html {
 @keyframes underlineGrow { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
 
 /* -------------------- Home / hero / mission -------------------- */
-.hero { background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 50%, #ec4899 100%); color: white; padding: 100px var(--spacing-xl); text-align: center; position: relative; overflow: hidden; }
+.hero { background: linear-gradient(135deg, #0b1b3d 0%, #2b0b75 50%, #431094 100%); color: white; padding: 100px var(--spacing-xl); text-align: center; position: relative; overflow: hidden; }
 .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
 .hero-title { font-size: clamp(2.5rem, 10vw, 4rem); font-weight: 800; margin-bottom: var(--spacing-lg); letter-spacing: -1px; animation: slideUp 0.8s ease-out; }
 .hero-subtitle { font-size: clamp(1rem, 3vw, 1.5rem); font-weight: 300; margin-bottom: var(--spacing-xl); opacity: 0.95; line-height: 1.6; animation: slideUp 0.8s ease-out 0.2s both; }
@@ -570,7 +570,7 @@ html {
 	width: 60px;
 	height: 60px;
 	flex: 0 0 60px;
-	background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 50%, #ec4899 100%);
+	background: linear-gradient(135deg, #0b1b3d 0%, #2b0b75 50%, #431094 100%);
 	color: white;
 	font-size: 1.25rem;
 	font-weight: 700;
