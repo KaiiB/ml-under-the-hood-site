@@ -33,6 +33,7 @@ def home():
 
 
 # Mount routers under a common prefix
+
 app.include_router(em_router, prefix="/api/trace", tags=["em"]) # reachable at /api/trace/em, POST body as EMRequest formatted JSON 
 app.include_router(pca_router, prefix="/api/trace", tags=["pca"])
 app.include_router(linreg_router, prefix="/api/trace", tags=["linreg"]) # reachable at /api/trace/linreg, POST body as LinRegRequest formatted JSON
