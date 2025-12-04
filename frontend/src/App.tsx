@@ -93,6 +93,21 @@ function HomePage() {
                 <span className="tag">Regression</span>
               </div>
             </div>
+
+            {/* Regularization */}
+            <div className="algo-card regularization-card">
+              <div className="algo-icon">🛡️</div>
+              <h3>Regularization</h3>
+              <p>
+                Learn how to prevent overfitting with Ridge and Lasso regression. Watch how regularization
+                shrinks coefficients and performs automatic feature selection.
+              </p>
+              <div className="algo-tags">
+                <span className="tag">Supervised</span>
+                <span className="tag">Regularization</span>
+                <span className="tag">Feature Selection</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

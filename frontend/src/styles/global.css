@@ -206,7 +206,10 @@ html {
 /* -------------------- Algorithm cards (from components.css) -------------------- */
 .algorithms { background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); padding: 80px var(--spacing-xl); border-top: 1px solid var(--border-color); }
 .algorithms h2 { font-size: clamp(1.875rem, 5vw, 2.5rem); margin-bottom: var(--spacing-2xl); text-align: center; color: var(--text-primary); font-weight: 700; }
-.algo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--spacing-xl); max-width: var(--site-max-width); margin: 0 auto; }
+.algo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--spacing-lg); max-width: var(--site-max-width); margin: 0 auto; }
+@media (max-width: 1400px) { .algo-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { .algo-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .algo-grid { grid-template-columns: 1fr; } }
 .algo-card { background: white; border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; position: relative; overflow: hidden; }
 .algo-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, currentColor, transparent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease-out; }
 .algo-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-xl); }
