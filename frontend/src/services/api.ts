@@ -180,7 +180,7 @@ export class LinRegAPI {
 
   async runLinRegTrace(request: LinRegRequest): Promise<LinRegTrace> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/trace/linreg`, {
+      const response = await fetch(`${this.baseUrl}api/trace/linreg`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +190,7 @@ export class LinRegAPI {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}, `);
       }
 
       const data: LinRegTrace = await response.json();
@@ -214,7 +214,7 @@ export class KMeansAPI {
    */
   async runKMeansTrace(request: KMeansRequest): Promise<KMeansTrace> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/trace/kmeans`, {
+      const response = await fetch(`${this.baseUrl}api/trace/kmeans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ export class KMeansAPI {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`);
+      const response = await fetch(`${this.baseUrl}health`);
       return response.ok;
     } catch {
       return false;
@@ -377,7 +377,7 @@ export class RegularizationAPI {
    */
   async runRegularizationTrace(request: RegularizationRequest): Promise<RegularizationTrace> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/trace/regularization`, {
+      const response = await fetch(`${this.baseUrl}api/trace/regularization`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -407,7 +407,7 @@ export class RegularizationAPI {
         ...request,
         compute_path: true,
       };
-      const response = await fetch(`${this.baseUrl}/api/trace/regularization`, {
+      const response = await fetch(`${this.baseUrl}api/trace/regularization`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -452,7 +452,7 @@ export class RegularizationAPI {
         compute_loss_surface: true,
         loss_surface_params: params,
       };
-      const response = await fetch(`${this.baseUrl}/api/trace/regularization`, {
+      const response = await fetch(`${this.baseUrl}api/trace/regularization`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

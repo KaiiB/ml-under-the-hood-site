@@ -132,7 +132,7 @@ export default function PCAConfigurator() {
       covs: state.covs,
     };
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trace/pca`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}api/trace/pca`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dataset }),
