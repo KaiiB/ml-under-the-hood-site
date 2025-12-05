@@ -1,4 +1,4 @@
-# PCA Side — Documentation
+# PCA — Documentation
 
 This document provides a developer-friendly overview of the major React/TypeScript components used for PCA visualization and UFC PCA plotting.  
 Moreover, it provides an overview of the major backend Python functions and classes used for PCA dataset generation, processing, and trace computation.
