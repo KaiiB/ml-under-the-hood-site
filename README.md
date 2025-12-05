@@ -613,3 +613,271 @@ Show how **L1/L2 regularization** and **cross-validation** affect model complexi
 
 The emphasis is not just on matching `sklearn` behavior, but on making the hidden steps of the algorithms **visible, interactive, and teachable**.
 
+# K-Means - Documentation
+
+An educational implementation of K-Means clustering with interactive step-by-step visualization for learning algorithm internals.
+
+## 🎯 Overview
+
+**Features:**
+- Step-by-step iteration tracking and visualization
+- 2D (D3.js) and 3D (Plotly) visualizations
+- Multiple dataset types: blobs, moons, circles, random
+- Manual centroid placement
+- Mathematical explanations and WCSS optimization plots
+
+## 🔬 Algorithm
+
+K-Means partitions data into K clusters by iteratively:
+1. **Initialization**: Place K centroids (K-Means++, random, or manual)
+2. **Assignment**: Assign each point to nearest centroid
+3. **Update**: Recalculate centroids as mean of assigned points
+4. **Convergence**: Repeat until centroid movement < tolerance
+
+**Initialization Methods:**
+- **K-Means++** (default): Probability-based selection for better initialization
+- **Random**: Random placement in extended data space
+- **Manual**: Interactive centroid placement
+
+## 🏗️ Architecture
+
+### Backend (`app/algos/kmeans.py`)
+
+```python
+class KMeans:
+    def fit(self, X, initial_centroids=None, init_method='kmeans++')
+    def step(self, X, centroids, iteration=0)  # Single iteration with tracking
+
+def run_kmeans_trace(dataset_params: dict, algo_params: dict, initial_centroids=None) -> dict
+```
+
+**Key Classes:**
+- `KMeans`: Core algorithm with step tracking
+- `DataGenerator`: Synthetic dataset generation (blobs, moons, circles, random)
+
+### Frontend (`frontend/src/scripts/KMeans.tsx`)
+
+**Components:**
+- `ControlPanel`: Dataset/algorithm configuration
+- `D3Plot2D` / `Plot3D`: Visualizations
+- `IterationControls`: Step navigation
+- `MetricCards`: Real-time metrics (WCSS, cluster sizes, movement)
+- `WCSSPlot`: Optimization curve
+- `MathematicalDetails`: Educational explanations
+
+### API: `POST /api/kmeans`
+
+**Request:**
+```json
+{
+  "dataset": {
+    "data_type": "blobs",  // "blobs" | "moons" | "circles" | "random"
+    "n_samples": 300,
+    "n_centers": 3,
+    "n_features": 2,  // 2 or 3
+    "random_state": 42,
+    "noise": 0.1,
+    "separation": 1.0
+  },
+  "algo": {
+    "n_clusters": 3,
+    "max_iters": 100,
+    "tolerance": 0.0001,
+    "init_method": "kmeans++",  // "kmeans++" | "random"
+    "initial_centroids": null
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "steps": [
+    {
+      "t": 0,
+      "type": "initialization",
+      "payload": {
+        "iteration": 0,
+        "inertia": 1234.56,
+        "centroids": [{"id": 0, "position": [x, y]}, ...],
+        "cluster_sizes": [100, 100, 100],
+        "labels": [0, 1, 2, ...]
+      }
+    }
+  ],
+  "inertia_history": [1234.56, ...],
+  "summary": {
+    "iterations": 15,
+    "converged": true,
+    "final_inertia": 456.78
+  }
+}
+```
+
+## 💻 Usage
+
+### Python
+```python
+from app.algos.kmeans import run_kmeans_trace
+
+dataset_params = {
+    "data_type": "blobs",
+    "n_samples": 300,
+    "n_centers": 3,
+    "n_features": 2,
+    "random_state": 42
+}
+
+algo_params = {
+    "n_clusters": 3,
+    "max_iters": 100,
+    "tolerance": 1e-4,
+    "init_method": "kmeans++"
+}
+
+trace = run_kmeans_trace(dataset_params, algo_params)
+```
+
+### TypeScript
+```typescript
+import { kmeansAPI } from '../services/api';
+
+const trace = await kmeansAPI.runKMeansTrace({
+  dataset: { data_type: 'blobs', n_samples: 300, n_features: 2, ... },
+  algo: { n_clusters: 3, max_iters: 100, ... }
+});
+```
+
+## 📐 Mathematics
+
+**Objective (WCSS):**
+\[J = \sum_{i=1}^{n} \sum_{k=1}^{K} w_{ik} \|x_i - \mu_k\|^2\]
+
+**Assignment:**
+\[c_i = \arg\min_{k} \|x_i - \mu_k\|\]
+
+**Update:**
+\[\mu_k = \frac{1}{|C_k|} \sum_{x_i \in C_k} x_i\]
+
+**Convergence:**
+\[\max_k \|\mu_k^{(t+1)} - \mu_k^{(t)}\| < \epsilon\]
+
+## 🚀 Setup
+
+```bash
+# Backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+
+# Frontend
+cd frontend && npm install && npm run dev
+```
+
+**Dependencies:** numpy, scikit-learn, fastapi, pydantic, react, typescript, d3, plotly.js
+
+# EM for Gaussian Mixtures — Documentation
+
+This section documents the main frontend + backend pieces used for the EM visualization.
+
+---
+
+## Frontend (React / TypeScript) — `EM.tsx`
+
+**Purpose**
+
+
+- Renders the EM for GMMs page with:
+  - Left sidebar controls for dataset + algorithm hyperparameters.
+  - Right panel with a 3D Plotly visualization and a log-likelihood chart.
+  - Tabs for **EM Explanation** vs **EM Visualization** views. :contentReference[oaicite:0]{index=0}  
+
+**Key components & helpers**
+
+- **`EM` (default export)**  
+  - Manages all React state (dataset params, EM params, active tab, iteration slider, view mode, loading/error).  
+  - Calls the backend endpoint (`/api/trace/em`) via `runEm()` and stores the returned trace in state.  
+  - Renders:
+    - Sliders/inputs for dataset + algorithm controls.
+    - A “Run EM” button and a “Show Raw Data / Show Model View” toggle.
+    - The 3D EM plot + cluster parameter cards.
+    - The log-likelihood chart.
+    - The text-based EM explanation + formulas (KaTeX). :contentReference[oaicite:1]{index=1}  
+
+- **`runEm()`**
+  - Builds a JSON body with:
+    - `dataset`: `{ K, seed, n, cov_diag_min, cov_diag_max, mean_min, mean_max }`
+    - `algo`: `{ C, num_iters }`
+  - Sends a `POST` request to `http://localhost:8000/api/trace/em`.  
+  - On success, saves the JSON trace in `trace` and resets the iteration slider. :contentReference[oaicite:2]{index=2}  
+
+- **`renderEmPlot(trace, iter, layout)`**
+  - Hard-assigns each data point to the nearest Gaussian mean (using `nearestMeanIndex`).
+  - Draws:
+    - Cluster-colored 3D scatter of points.
+    - Diamond markers for component means.
+    - Semi-transparent ellipsoid surfaces using the diagonal entries of Σ. :contentReference[oaicite:3]{index=3}  
+
+- **`renderRawPlot(trace, layout)`**
+  - Shows only the raw 3D data as a neutral scatter without cluster structure. :contentReference[oaicite:4]{index=4}  
+
+- **`LogLikelihoodChart({ values, currentIter })`**
+  - Uses **D3** to render a custom SVG line chart of log-likelihood over iterations.
+  - A red marker + vertical red line track the current iteration while sliding. :contentReference[oaicite:5]{index=5}  
+
+**External resources (frontend)**
+
+- `react-plotly.js` — 3D scatter + surface plots.
+- `d3` — SVG log-likelihood chart + scales.
+- `react-katex` — nicely rendered EM / GMM formulas.
+- Shared CSS in `../styles/global.css` for layout and styling. :contentReference[oaicite:6]{index=6}  
+
+---
+
+## Backend (Python) — `em.py`
+
+**Purpose**
+
+- Generates synthetic 3D GMM data.
+- Runs EM for Gaussian Mixture Models.
+- Packages a full **trace** (steps + log-likelihoods + metadata) to be consumed by the frontend. :contentReference[oaicite:7]{index=7}  
+
+**Core functions & class**
+
+- **`GMM3d(K, seed, n, cov_diag_min, cov_diag_max, mean_min, mean_max)`**
+  - Samples `n` points in 3D from `K` Gaussian components.
+  - Returns:
+    - `X` of shape `(n, 3)`.
+    - `meta` with ground-truth means/covariances. :contentReference[oaicite:8]{index=8}  
+
+- **`initialized_params(X, C)`**
+  - Initializes EM parameters:
+    - Mixture weights π (uniform).
+    - Means μ (random subset of rows of `X`).
+    - Covariances Σ (diagonal with per-feature variances). :contentReference[oaicite:9]{index=9}  
+
+- **`multivariate_norm_pdf(X, mu, sigma)`**
+  - Computes the multivariate Gaussian density for all rows in `X` under N(μ, Σ). :contentReference[oaicite:10]{index=10}  
+
+- **`class EM`**
+  - Holds dataset `X`, number of components `C`, and parameters (π, μ, Σ, γ).  
+  - **`expectation()`**
+    - Computes responsibilities γ using current parameters.
+    - Updates log-likelihood history. :contentReference[oaicite:11]{index=11}  
+  - **`maximization()`**
+    - Updates π, μ, Σ using responsibility-weighted sums.
+    - Adds a small diagonal term for numerical stability. :contentReference[oaicite:12]{index=12}  
+  - **`fit_and_trace(num_iters)`**
+    - Runs EM for `num_iters` iterations.
+    - Returns:
+      - `steps`: list of `{ t, type, payload }` snapshots.
+      - `log_likelihood_history`: list of log-likelihood values. :contentReference[oaicite:13]{index=13}  
+
+- **`run_em_trace(dataset_params, algo_params)`**
+  - Calls `GMM3d(**dataset_params)` to build data.
+  - Instantiates `EM` with `C = algo_params["C"]`.
+  - Runs `fit_and_trace(num_iters=algo_params["num_iters"])`.
+  - Wraps everything into a JSON-serializable trace:
+    - `algo`, `meta` (n, d, data, raw_data),
+    - `params`, `params_full`,
+    - `steps`, `log_likelihoods`.  
+  - This is the object returned to the FastAPI `/api/trace/em` endpoint and consumed by the React `EM` component. :contentReference[oaicite:14]{index=14}  
