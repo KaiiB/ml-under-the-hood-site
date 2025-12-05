@@ -1,4 +1,4 @@
-# 📘 sk-learn: Under the Hood: PCA Side — Documentation
+# PCA Side — Documentation
 
 This document provides a developer-friendly overview of the major React/TypeScript components used for PCA visualization and UFC PCA plotting.  
 Moreover, it provides an overview of the major backend Python functions and classes used for PCA dataset generation, processing, and trace computation.
@@ -504,4 +504,112 @@ This backend portion of this repository provides:
 - run_pca_trace function for end-to-end trace generation for frontend integration
 
 Use this README as a quick reference when extending, debugging, or integrating these components into larger UI flows.
+
+## Linear Regression & Regularization – Documentation
+
+### 1. Linear Regression
+
+**Goal**  
+Rebuild 1D/2D linear regression from scratch and make each optimization step visible.
+
+**Key Features**
+- **Synthetic data generation** with controllable:
+  - number of samples, noise level, true slope/intercept, input range
+- **Gradient Descent implementation**  
+  Core learning loop is written with NumPy (no `sklearn` in the core logic).
+- **Step-by-step trace** of parameters and loss:
+  - stores \((w, b)\) and cost at every iteration
+  - exposes the full optimization trajectory instead of only the final model
+- **Interactive front-end (LinReg.tsx)**
+  - 2D plot: data points, true line, model prediction line
+  - 3D **cost surface** \(J(w, b)\) with the parameter path moving across the surface
+  - Iteration controls (first / previous / next / last) and keyboard shortcuts
+  - Metric cards (current MSE, parameters, iteration, convergence info)
+  - “Math” tab with formulas and explanations for:
+    - MSE loss
+    - gradients
+    - gradient descent behavior
+
+Overall, this module is designed to show **how linear regression learns**, not just what the final line looks like.
+
+---
+
+### 2. Regularization (Ridge & Lasso)
+
+**Goal**  
+Show how **L1/L2 regularization** and **cross-validation** affect model complexity, coefficients, and error.
+
+**Key Ideas**
+- Use **polynomial synthetic data** that is easy to overfit.
+- Compare **Ridge (L2)** vs **Lasso (L1)** behavior.
+- Visualize how **alpha / lambda** changes:
+  - coefficient magnitudes
+  - training loss and MSE
+  - per-fold vs mean performance.
+
+**Backend (regularization.py)**
+- Custom implementations of:
+  - **RidgeRegression**
+  - **LassoRegression**
+- Functions to:
+  - generate polynomial data with configurable:
+    - true coefficients
+    - noise level
+    - sample size
+    - input range
+  - compute a **coefficient path** over a grid of lambda values:
+    - `lambdas`: tested regularization strengths
+    - `weights_path`: weights for each lambda (from the first fold)
+    - `mse_path_folds`: MSE per fold, per lambda
+    - `mse_values`: mean MSE across folds
+    - `reg_values`: regularization penalty term
+  - support **N-fold cross-validation** (configurable `n_folds`).
+
+**Front-end (Regularization.tsx)**
+- **Dataset & algorithm configuration**
+  - samples, noise, seed, polynomial coefficients
+  - regularization type (ridge / lasso), learning rate, iterations
+  - lambda range \([\lambda_{\min}, \lambda_{\max}]\), number of lambdas
+  - number of folds \(K\) for cross-validation
+
+- **Visualizations**
+  1. **2D Coefficient Path**
+     - X-axis: \(-\log(\alpha)\) (or lambda)
+     - Y-axis: coefficient values
+     - Shows how weights are shrunk as regularization increases.
+  2. **2D Alpha vs MSE**
+     - Dashed colored lines: **per-fold MSE** curves
+     - Solid black line: **mean MSE** across folds
+     - Mimics textbook plots for model selection via cross-validation.
+  3. **3D Alpha vs MSE (with folds)**
+     - Axes: \(\alpha\) × fold index × MSE
+     - Interactive controls (above the plot) for:
+       - number of samples
+       - noise level
+       - number of folds \(K\)
+     - Lets users see how more noise or more folds change the “MSE landscape”.
+  4. **3D Loss Surface – Ridge Regression**
+     - Loss surface over \((w_0, w_1)\)
+     - Visual markers for:
+       - true parameters
+       - ridge solution for a given alpha
+       - regularization “target” (origin)
+     - Inspired by standard “ridge loss surface + constraint” textbook visuals.
+
+- **Pedagogical Guides**
+  - Each major visualization (3D alpha vs MSE, loss surface) includes a **short study guide** in the UI:
+    - what each axis means
+    - what to look for when adjusting alpha / noise / folds
+    - how cross-validation stabilizes model selection.
+
+---
+
+### 3. What This Module Demonstrates
+
+- How **plain linear regression** learns a line via gradient descent.
+- How **Ridge vs Lasso** control model complexity by shrinking coefficients.
+- How **cross-validation** (K-fold) is used to select a stable regularization strength.
+- How **loss surfaces** and **MSE vs alpha** plots connect the math to visual intuition.
+
+The emphasis is not just on matching `sklearn` behavior, but on making the hidden steps of the algorithms **visible, interactive, and teachable**.
 
