@@ -505,9 +505,9 @@ This backend portion of this repository provides:
 
 Use this README as a quick reference when extending, debugging, or integrating these components into larger UI flows.
 
-## Linear Regression & Regularization – Documentation
+# Linear Regression & Regularization – Documentation
 
-### 1. Linear Regression
+## 1. Linear Regression
 
 **Goal**  
 Rebuild 1D/2D linear regression from scratch and make each optimization step visible.
@@ -534,7 +534,7 @@ Overall, this module is designed to show **how linear regression learns**, not j
 
 ---
 
-### 2. Regularization (Ridge & Lasso)
+## 2. Regularization (Ridge & Lasso)
 
 **Goal**  
 Show how **L1/L2 regularization** and **cross-validation** affect model complexity, coefficients, and error.
